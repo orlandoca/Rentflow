@@ -1,13 +1,7 @@
-import { createClient } from '@supabase/supabase-js'
+﻿import { createClient } from '@supabase/supabase-js'
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
+// DiagnÃ³stico temporal: hardcoding de credenciales
+const supabaseUrl = 'https://vdcapnhaqyadsaaspwwq.supabase.co'
+const supabaseAnonKey = 'sb_publishable_a1qxtA_ojUjH8n3bb6HVjw_irOTMR0E'
 
-if (!supabaseUrl || !supabaseAnonKey) {
-  console.warn('Supabase URL or Anon Key is missing. Check your .env file.')
-}
-
-export const supabase = createClient(
-  supabaseUrl || '',
-  supabaseAnonKey || ''
-)
+export const supabase = createClient(supabaseUrl, supabaseAnonKey)

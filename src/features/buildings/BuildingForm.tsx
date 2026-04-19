@@ -1,4 +1,4 @@
-import { useState } from 'react'
+﻿import { useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { Button } from '@/components/ui/button'
 
@@ -10,6 +10,7 @@ export default function BuildingForm({ onSuccess }: BuildingFormProps) {
   const [loading, setLoading] = useState(false)
   const [formData, setFormData] = useState({
     name: '',
+    owner_name: 'ANA GOREJKO', // Default para mantener compatibilidad
     address: '',
     description: '',
     status: 'available' as const
@@ -26,8 +27,8 @@ export default function BuildingForm({ onSuccess }: BuildingFormProps) {
         .insert(formData)
 
       if (error) throw error
-      
-      setFormData({ name: '', address: '', description: '', status: 'available' })
+
+      setFormData({ name: '', owner_name: 'ANA GOREJKO', address: '', description: '', status: 'available' })
       onSuccess()
     } catch (error) {
       console.error('Error saving building:', error)
@@ -42,10 +43,10 @@ export default function BuildingForm({ onSuccess }: BuildingFormProps) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 p-6 bg-slate-900 rounded-2xl border border-slate-800">
+    <form onSubmit={handleSubmit} className="space-y-4 p-6 bg-slate-900 rounded-2xl border border-slate-800 shadow-xl">
       <div className="space-y-2">
-        <label htmlFor="name" className="text-sm font-medium text-slate-300">
-          Nombre del Edificio / Depto
+        <label htmlFor="name" className="text-sm font-bold text-slate-400 uppercase tracking-wider">
+          Nombre del Edificio / Complejo
         </label>
         <input
           id="name"
@@ -54,14 +55,30 @@ export default function BuildingForm({ onSuccess }: BuildingFormProps) {
           required
           value={formData.name}
           onChange={handleChange}
-          className="w-full px-4 py-2 bg-slate-950 border border-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-white"
-          placeholder="Ej: Edificio Plaza - Depto 201"
+          className="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-white transition-all"
+          placeholder="Ej: Torre Plaza"
         />
       </div>
 
       <div className="space-y-2">
-        <label htmlFor="address" className="text-sm font-medium text-slate-300">
-          Dirección
+        <label htmlFor="owner_name" className="text-sm font-bold text-slate-400 uppercase tracking-wider">
+          Titular / Propietario Legal
+        </label>
+        <input
+          id="owner_name"
+          name="owner_name"
+          type="text"
+          required
+          value={formData.owner_name}
+          onChange={handleChange}
+          className="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-emerald-400 font-bold transition-all"
+          placeholder="Nombre o Empresa"
+        />
+      </div>
+
+      <div className="space-y-2">
+        <label htmlFor="address" className="text-sm font-bold text-slate-400 uppercase tracking-wider">
+          DirecciÃ³n
         </label>
         <input
           id="address"
@@ -69,13 +86,13 @@ export default function BuildingForm({ onSuccess }: BuildingFormProps) {
           type="text"
           value={formData.address}
           onChange={handleChange}
-          className="w-full px-4 py-2 bg-slate-950 border border-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-white"
-          placeholder="Calle 123 entre..."
+          className="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-white transition-all"
+          placeholder="UbicaciÃ³n del inmueble"
         />
       </div>
 
       <div className="space-y-2">
-        <label htmlFor="status" className="text-sm font-medium text-slate-300">
+        <label htmlFor="status" className="text-sm font-bold text-slate-400 uppercase tracking-wider">
           Estado Inicial
         </label>
         <select
@@ -83,7 +100,7 @@ export default function BuildingForm({ onSuccess }: BuildingFormProps) {
           name="status"
           value={formData.status}
           onChange={handleChange}
-          className="w-full px-4 py-2 bg-slate-950 border border-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-white appearance-none"
+          className="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-white appearance-none transition-all"
         >
           <option value="available">Disponible</option>
           <option value="rented">Alquilado</option>
@@ -91,13 +108,15 @@ export default function BuildingForm({ onSuccess }: BuildingFormProps) {
         </select>
       </div>
 
-      <Button 
-        type="submit" 
-        className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition-colors"
-        disabled={loading}
-      >
-        {loading ? 'Guardando...' : 'Guardar Edificio'}
-      </Button>
+      <div className="pt-4">
+        <Button
+          type="submit"
+          className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold h-12 rounded-xl shadow-lg shadow-blue-900/20 transition-all"
+          disabled={loading}
+        >
+          {loading ? 'Procesando...' : 'Registrar Edificio'}
+        </Button>
+      </div>
     </form>
   )
 }

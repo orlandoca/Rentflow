@@ -1,4 +1,4 @@
-export interface Tenant {
+﻿export interface Tenant {
   id: string
   full_name: string
   email: string | null
@@ -14,6 +14,7 @@ export interface Building {
   name: string
   address: string | null
   description: string | null
+  owner_name: string // Nuevo campo dinÃ¡mico
   status: 'available' | 'rented' | 'maintenance'
   created_at: string
   updated_at: string

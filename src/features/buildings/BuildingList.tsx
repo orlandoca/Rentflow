@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react'
-import { supabase } from '@/lib/supabase'
-import { Building } from '@/types'
+﻿import { useEffect, useState } from "react"
+import { supabase } from "@/lib/supabase"
+import { Building } from "@/types"
 
 export default function BuildingList() {
   const [buildings, setBuildings] = useState<Building[]>([])
@@ -10,14 +10,14 @@ export default function BuildingList() {
     async function fetchBuildings() {
       try {
         const { data, error } = await supabase
-          .from('buildings')
-          .select('*')
-          .order('name', { ascending: true })
+          .from("buildings")
+          .select("*")
+          .order("name", { ascending: true })
 
         if (error) throw error
         setBuildings(data || [])
       } catch (error) {
-        console.error('Error fetching buildings:', error)
+        console.error("Error fetching buildings:", error)
       } finally {
         setLoading(false)
       }
@@ -26,36 +26,48 @@ export default function BuildingList() {
     fetchBuildings()
   }, [])
 
-  if (loading) return <div className="p-4 text-slate-400">Cargando edificios...</div>
+  if (loading) return <div className="p-4 text-slate-400 font-bold animate-pulse">Cargando edificios...</div>
 
   if (buildings.length === 0) {
     return (
-      <div className="p-8 text-center bg-slate-900/50 rounded-xl border border-dashed border-slate-700">
-        <p className="text-slate-500">No hay edificios registrados.</p>
+      <div className="p-8 text-center bg-slate-900/50 rounded-2xl border border-dashed border-slate-800"> 
+        <p className="text-slate-500 font-bold italic">No hay edificios registrados en el sistema.</p>
       </div>
     )
   }
 
   return (
-    <div className="grid gap-4">
+    <div className="grid gap-6">
       {buildings.map((building) => (
-        <div 
-          key={building.id} 
-          className="p-4 bg-slate-900 border border-slate-800 rounded-xl hover:border-slate-700 transition-colors"
+        <div
+          key={building.id}
+          className="p-6 bg-slate-900 border border-slate-800 rounded-2xl hover:border-blue-500/50 transition-all shadow-xl group"
         >
           <div className="flex justify-between items-start">
-            <div>
-              <h3 className="font-semibold text-white">{building.name}</h3>
-              <p className="text-sm text-slate-500">{building.address || 'Sin dirección'}</p>
+            <div className="space-y-2">
+              <h3 className="text-xl font-black text-white tracking-tight group-hover:text-blue-400 transition-colors">
+                {building.name}
+              </h3>
+              
+              <div className="flex items-center gap-2 text-[10px] font-black text-emerald-400 uppercase tracking-[0.2em] bg-emerald-500/10 px-3 py-1.5 rounded-lg w-fit">
+                <span>👤</span>
+                <span>Titular: {building.owner_name || "No definido"}</span>
+              </div>
+              
+              <p className="text-sm text-slate-500 font-bold pt-1 flex items-center gap-2">
+                <span>📍</span>
+                {building.address || "Sin dirección registrada"}
+              </p>
             </div>
+
             <div className="text-right">
-              <span className={`text-[10px] uppercase px-1.5 py-0.5 rounded font-bold ${
-                building.status === 'available' ? 'bg-emerald-500/10 text-emerald-500' :
-                building.status === 'rented' ? 'bg-blue-500/10 text-blue-500' :
-                'bg-orange-500/10 text-orange-500'
+              <span className={`text-[10px] uppercase px-3 py-1.5 rounded-full font-black tracking-tighter border ${
+                building.status === "available" ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20" :
+                building.status === "rented" ? "bg-blue-500/10 text-blue-500 border-blue-500/20" :
+                "bg-orange-500/10 text-orange-500 border-orange-500/20"
               }`}>
-                {building.status === 'available' ? 'Disponible' : 
-                 building.status === 'rented' ? 'Alquilado' : 'Mantenimiento'}
+                {building.status === "available" ? "Disponible" :
+                 building.status === "rented" ? "Alquilado" : "Mantenimiento"}
               </span>
             </div>
           </div>
