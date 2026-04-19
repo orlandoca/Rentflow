@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 import { Button } from '@/components/ui/button'
 import { Tenant, Unit } from '@/types'
-import { generateContractPDF } from '@/lib/contractGenerator'
+import { generateContractPDF } from '@/lib/pdfGenerators'
 
 interface ContractFormProps {
   onSuccess: () => void

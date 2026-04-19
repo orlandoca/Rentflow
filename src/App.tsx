@@ -7,6 +7,7 @@ import UnitList from '@/features/buildings/UnitList'
 import UnitForm from '@/features/buildings/UnitForm'
 import ContractList from '@/features/contracts/ContractList'
 import ContractForm from '@/features/contracts/ContractForm'
+import ContractDetails from '@/features/contracts/ContractDetails'
 import Dashboard from '@/features/dashboard/Dashboard'
 import { Button } from '@/components/ui/button'
 
@@ -17,6 +18,7 @@ function App() {
   const [activeTab, setActiveTab] = useState<Tab>('dashboard')
   const [activeSubTab, setActiveSubTab] = useState<SubTab>('list')
   const [showForm, setShowForm] = useState(false)
+  const [selectedContractId, setSelectedContractId] = useState<string | null>(null)
   const [refreshKey, setRefreshKey] = useState(0)
 
   const handleSuccess = () => {
@@ -33,7 +35,6 @@ function App() {
 
   return (
     <div className="min-h-screen bg-slate-950 text-white font-sans selection:bg-blue-500/30">
-      {/* Header Fijo / Moderno */}
       <header className="sticky top-0 z-50 bg-slate-950/80 backdrop-blur-md border-b border-slate-900">
         <div className="max-w-5xl mx-auto px-4 md:px-8 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
           <div className="flex items-center gap-3">
@@ -50,7 +51,7 @@ function App() {
             {tabs.map(tab => (
               <button 
                 key={tab.id}
-                onClick={() => { setActiveTab(tab.id as Tab); setShowForm(false); }}
+                onClick={() => { setActiveTab(tab.id as Tab); setShowForm(false); setSelectedContractId(null); }}
                 className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all ${
                   activeTab === tab.id 
                     ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/20' 
@@ -63,7 +64,7 @@ function App() {
             ))}
           </nav>
 
-          {activeTab !== 'dashboard' && (
+          {activeTab !== 'dashboard' && !selectedContractId && (
             <Button 
               onClick={() => setShowForm(!showForm)}
               className={`${showForm ? 'bg-slate-800' : 'bg-emerald-600 hover:bg-emerald-500'} text-white rounded-xl px-6 font-bold shadow-lg transition-all`}
@@ -75,48 +76,46 @@ function App() {
       </header>
       
       <main className="max-w-5xl mx-auto px-4 md:px-8 py-12">
-        {/* Sub-navegación para Edificios */}
-        {activeTab === 'buildings' && !showForm && (
-          <div className="flex gap-8 border-b border-slate-900 mb-8">
-            <button 
-              onClick={() => setActiveSubTab('list')} 
-              className={`pb-4 text-xs font-black uppercase tracking-widest transition-all ${activeSubTab === 'list' ? 'text-blue-400 border-b-2 border-blue-400' : 'text-slate-600 hover:text-slate-400'}`}
-            >
-              Torres / Edificios
-            </button>
-            <button 
-              onClick={() => setActiveSubTab('units')} 
-              className={`pb-4 text-xs font-black uppercase tracking-widest transition-all ${activeSubTab === 'units' ? 'text-blue-400 border-b-2 border-blue-400' : 'text-slate-600 hover:text-slate-400'}`}
-            >
-              Departamentos
-            </button>
-          </div>
-        )}
-
-        <div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
-          {showForm ? (
-            <section className="max-w-2xl mx-auto">
-              <div className="mb-8">
-                <h2 className="text-3xl font-black text-white tracking-tight">
-                  {activeTab === 'tenants' ? 'Nuevo Inquilino' : 
-                   activeTab === 'buildings' ? (activeSubTab === 'list' ? 'Registrar Edificio' : 'Nuevo Departamento') :
-                   'Crear Contrato'}
-                </h2>
-                <p className="text-slate-500 text-sm mt-1">Completa los datos para el registro oficial.</p>
+        {selectedContractId ? (
+          <ContractDetails 
+            contractId={selectedContractId} 
+            onBack={() => setSelectedContractId(null)} 
+          />
+        ) : (
+          <>
+            {activeTab === 'buildings' && !showForm && (
+              <div className="flex gap-8 border-b border-slate-900 mb-8">
+                <button onClick={() => setActiveSubTab('list')} className={`pb-4 text-xs font-black uppercase tracking-widest transition-all ${activeSubTab === 'list' ? 'text-blue-400 border-b-2 border-blue-400' : 'text-slate-600 hover:text-slate-400'}`}>Torres / Edificios</button>
+                <button onClick={() => setActiveSubTab('units')} className={`pb-4 text-xs font-black uppercase tracking-widest transition-all ${activeSubTab === 'units' ? 'text-blue-400 border-b-2 border-blue-400' : 'text-slate-600 hover:text-slate-400'}`}>Departamentos</button>
               </div>
-              {activeTab === 'tenants' ? <TenantForm onSuccess={handleSuccess} /> : 
-               activeTab === 'buildings' ? (activeSubTab === 'list' ? <BuildingForm onSuccess={handleSuccess} /> : <UnitForm onSuccess={handleSuccess} />) :
-               <ContractForm onSuccess={handleSuccess} />}
-            </section>
-          ) : (
-            <section className="space-y-6">
-              {activeTab === 'dashboard' ? <Dashboard key={refreshKey} /> :
-               activeTab === 'tenants' ? <TenantsList key={`t-${refreshKey}`} /> : 
-               activeTab === 'buildings' ? (activeSubTab === 'list' ? <BuildingList key={`b-${refreshKey}`} /> : <UnitList key={`u-${refreshKey}`} />) :
-               <ContractList key={`c-${refreshKey}`} />}
-            </section>
-          )}
-        </div>
+            )}
+
+            <div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
+              {showForm ? (
+                <section className="max-w-2xl mx-auto">
+                  <div className="mb-8">
+                    <h2 className="text-3xl font-black text-white tracking-tight">
+                      {activeTab === 'tenants' ? 'Nuevo Inquilino' : 
+                       activeTab === 'buildings' ? (activeSubTab === 'list' ? 'Registrar Edificio' : 'Nuevo Departamento') :
+                       'Crear Contrato'}
+                    </h2>
+                    <p className="text-slate-500 text-sm mt-1">Completa los datos para el registro oficial.</p>
+                  </div>
+                  {activeTab === 'tenants' ? <TenantForm onSuccess={handleSuccess} /> : 
+                   activeTab === 'buildings' ? (activeSubTab === 'list' ? <BuildingForm onSuccess={handleSuccess} /> : <UnitForm onSuccess={handleSuccess} />) :
+                   <ContractForm onSuccess={handleSuccess} />}
+                </section>
+              ) : (
+                <section className="space-y-6">
+                  {activeTab === 'dashboard' ? <Dashboard key={refreshKey} /> :
+                   activeTab === 'tenants' ? <TenantsList key={`t-${refreshKey}`} /> : 
+                   activeTab === 'buildings' ? (activeSubTab === 'list' ? <BuildingList key={`b-${refreshKey}`} /> : <UnitList key={`u-${refreshKey}`} />) :
+                   <ContractList key={`c-${refreshKey}`} onViewDetails={(id) => setSelectedContractId(id)} />}
+                </section>
+              )}
+            </div>
+          </>
+        )}
       </main>
 
       <footer className="max-w-5xl mx-auto mt-20 px-8 py-12 border-t border-slate-900 flex flex-col md:flex-row justify-between items-center gap-4 text-[10px] text-slate-600 font-bold uppercase tracking-[0.3em]">

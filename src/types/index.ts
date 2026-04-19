@@ -47,3 +47,14 @@ export interface Contract {
   tenant?: Tenant
   unit?: Unit
 }
+
+export interface Payment {
+  id: string
+  contract_id: string
+  amount: number
+  payment_date: string
+  month_covered: string
+  payment_method: 'cash' | 'transfer' | 'check'
+  notes: string | null
+  created_at: string
+}

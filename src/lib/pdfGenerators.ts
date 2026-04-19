@@ -1,5 +1,5 @@
 import { jsPDF } from 'jspdf'
-import { Tenant, Unit, Building } from '@/types'
+import { Tenant, Unit, Building, Payment } from '@/types'
 
 interface ContractData {
   tenant: Tenant
@@ -9,6 +9,17 @@ interface ContractData {
   endDate: string
   monthlyAmount: number
   depositAmount: number
+}
+
+interface ReceiptData {
+  payment: Payment
+  tenant: Tenant
+  unit: Unit
+  building: Building
+}
+
+const formatPrice = (price: number) => {
+  return new Intl.NumberFormat('es-PY').format(price)
 }
 
 export const generateContractPDF = (data: ContractData) => {
@@ -30,19 +41,12 @@ export const generateContractPDF = (data: ContractData) => {
     }
   }
 
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('es-PY').format(price)
-  }
-
-  // Título
   addText('CONTRATO DE ALQUILER DE INMUEBLE', 16, true, 'center')
   y += 10
 
-  // Encabezado / Partes
   const intro = `Entre el Propietario/Administrador (en adelante "EL LOCADOR") y por la otra parte el Sr./Sra. ${data.tenant.full_name}, con C.I. Nº ${data.tenant.ci} (en adelante "EL LOCATARIO"), convienen en celebrar el presente Contrato de Alquiler, sujeto a las siguientes cláusulas:`
   addText(intro)
 
-  // Cláusulas
   addText('PRIMERA: OBJETO', 12, true)
   addText(`EL LOCADOR entrega en alquiler al LOCATARIO, y éste acepta, el departamento individualizado como ${data.unit.unit_number} del ${data.building.name}, ubicado en ${data.building.address || 'Asunción, Paraguay'}.`)
 
@@ -57,11 +61,7 @@ export const generateContractPDF = (data: ContractData) => {
   addText('CUARTA: DEPÓSITO DE GARANTÍA', 12, true)
   addText(`En este acto, EL LOCATARIO hace entrega de la suma de Gs. ${formatPrice(data.depositAmount)} en concepto de depósito de garantía, el cual será devuelto al finalizar el contrato si no existieren deudas o daños en el inmueble.`)
 
-  addText('QUINTA: USO Y DESTINO', 12, true)
-  addText('El inmueble alquilado será destinado exclusivamente para vivienda familiar, no pudiendo darle otro uso ni subalquilarlo sin consentimiento previo por escrito.')
-
   y += 30
-  // Firmas
   doc.line(margin, y, 90, y)
   doc.line(120, y, 190, y)
   y += 5
@@ -71,6 +71,63 @@ export const generateContractPDF = (data: ContractData) => {
   doc.setFontSize(8)
   doc.text(`C.I. Nº: ${data.tenant.ci}`, 140, y)
 
-  // Descargar
-  doc.save(`Contrato_${data.tenant.full_name.replace(' ', '_')}.pdf`)
+  doc.save(`Contrato_${data.tenant.full_name.replace(/\s/g, '_')}.pdf`)
+}
+
+export const generateReceiptPDF = (data: ReceiptData) => {
+  const doc = new jsPDF({
+    orientation: 'landscape',
+    unit: 'mm',
+    format: [210, 100] // Formato alargado tipo recibo
+  })
+
+  const monthName = new Date(data.payment.month_covered + 'T00:00:00').toLocaleDateString('es-PY', { month: 'long', year: 'numeric' })
+  const paymentDate = new Date(data.payment.payment_date).toLocaleDateString('es-PY')
+
+  // Marco
+  doc.setLineWidth(0.5)
+  doc.rect(5, 5, 200, 90)
+  doc.setLineWidth(0.1)
+  doc.line(140, 5, 140, 95) // Divisor para el talón
+
+  // Contenido Principal
+  doc.setFontSize(18)
+  doc.setFont('helvetica', 'bold')
+  doc.text('RECIBO DE DINERO', 15, 15)
+  
+  doc.setFontSize(12)
+  doc.text(`Nº RF-${data.payment.id.slice(0, 8).toUpperCase()}`, 100, 15)
+
+  doc.setFillColor(240, 240, 240)
+  doc.rect(15, 20, 115, 10, 'F')
+  doc.text(`Gs. ${formatPrice(data.payment.amount)}`, 125, 27, { align: 'right' })
+
+  doc.setFont('helvetica', 'normal')
+  doc.setFontSize(10)
+  let y = 40
+  doc.text(`Recibimos de: ${data.tenant.full_name}`, 15, y)
+  y += 7
+  doc.text(`La suma de: Guaraníes ${data.payment.amount.toLocaleString('es-PY')}`, 15, y)
+  y += 7
+  doc.text(`En concepto de: Alquiler mes de ${monthName}`, 15, y)
+  y += 7
+  doc.text(`Unidad: ${data.building.name} - Depto ${data.unit.unit_number}`, 15, y)
+
+  doc.setFontSize(9)
+  doc.text(`Fecha de cobro: ${paymentDate}`, 15, 80)
+  
+  doc.line(80, 85, 130, 85)
+  doc.text('Firma Recaudador', 90, 90)
+
+  // Talón de Control (Derecha)
+  doc.setFont('helvetica', 'bold')
+  doc.text('CONTROL', 145, 15)
+  doc.setFont('helvetica', 'normal')
+  doc.setFontSize(8)
+  doc.text(`Inquilino: ${data.tenant.full_name}`, 145, 25)
+  doc.text(`Mes: ${monthName}`, 145, 32)
+  doc.text(`Monto: ${formatPrice(data.payment.amount)}`, 145, 39)
+  doc.text(`Fecha: ${paymentDate}`, 145, 46)
+
+  doc.save(`Recibo_${data.tenant.full_name.replace(/\s/g, '_')}_${monthName.replace(/\s/g, '_')}.pdf`)
 }

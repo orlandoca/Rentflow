@@ -2,8 +2,13 @@ import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { Contract } from '@/types'
 
-export default function ContractList() {
+interface ContractListProps {
+  onViewDetails: (id: string) => void
+}
+
+export default function ContractList({ onViewDetails }: ContractListProps) {
   const [contracts, setContracts] = useState<Contract[]>([])
+  // ... rest of state ...
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -25,6 +30,8 @@ export default function ContractList() {
 
     fetchContracts()
   }, [])
+
+  // ... rest of helper functions ...
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('es-PY').format(price)
@@ -81,16 +88,24 @@ export default function ContractList() {
                 <p className="text-xl text-emerald-400 font-black tracking-tight">
                   Gs. {formatPrice(contract.monthly_amount)}
                 </p>
-                {contract.contract_url && (
-                  <a 
-                    href={contract.contract_url} 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-2 text-[10px] bg-slate-800 hover:bg-blue-600 text-blue-300 hover:text-white px-3 py-1.5 rounded-lg transition-all font-bold"
+                <div className="flex gap-2">
+                  <button 
+                    onClick={() => onViewDetails(contract.id)}
+                    className="flex items-center gap-2 text-[10px] bg-blue-600 hover:bg-blue-500 text-white px-3 py-1.5 rounded-lg transition-all font-bold uppercase"
                   >
-                    📄 VER CONTRATO
-                  </a>
-                )}
+                    💰 Pagos
+                  </button>
+                  {contract.contract_url && (
+                    <a 
+                      href={contract.contract_url} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 text-[10px] bg-slate-800 hover:bg-slate-700 text-blue-300 px-3 py-1.5 rounded-lg transition-all font-bold uppercase"
+                    >
+                      📄 PDF
+                    </a>
+                  )}
+                </div>
               </div>
             </div>
           </div>
