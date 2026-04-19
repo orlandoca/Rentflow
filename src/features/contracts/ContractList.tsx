@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react'
-import { supabase } from '@/lib/supabase'
-import { Contract } from '@/types'
+﻿import { useEffect, useState } from "react"
+import { supabase } from "@/lib/supabase"
+import { Contract } from "@/types"
 
 interface ContractListProps {
   onViewDetails: (id: string) => void
@@ -8,109 +8,88 @@ interface ContractListProps {
 
 export default function ContractList({ onViewDetails }: ContractListProps) {
   const [contracts, setContracts] = useState<Contract[]>([])
-  // ... rest of state ...
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     async function fetchContracts() {
       try {
         const { data, error } = await supabase
-          .from('contracts')
-          .select('*, tenant:tenants(full_name), unit:units(unit_number, building:buildings(name))')
-          .order('end_date', { ascending: true })
+          .from("contracts")
+          .select("*, tenant:tenants(*), unit:units(*, building:buildings(*))")
+          .order("created_at", { ascending: false })
 
         if (error) throw error
-        setContracts(data || [])
+        setContracts(data as any || [])
       } catch (error) {
-        console.error('Error fetching contracts:', error)
+        console.error("Error fetching contracts:", error)
       } finally {
         setLoading(false)
       }
     }
-
     fetchContracts()
   }, [])
 
-  // ... rest of helper functions ...
-
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('es-PY').format(price)
-  }
-
-  const getExpirationStatus = (endDate: string) => {
-    const end = new Date(endDate)
-    const now = new Date()
-    const diffTime = end.getTime() - now.getTime()
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
-
-    if (diffDays < 0) return { label: 'Vencido', color: 'bg-red-500/20 text-red-500 border-red-500/50', icon: '🚨' }
-    if (diffDays <= 30) return { label: `Vence en ${diffDays} días`, color: 'bg-orange-500/20 text-orange-500 border-orange-500/50', icon: '⚠️' }
-    return { label: 'Vigente', color: 'bg-emerald-500/20 text-emerald-500 border-emerald-500/50', icon: '✅' }
-  }
-
-  if (loading) return <div className="p-4 text-slate-400">Cargando contratos...</div>
+  if (loading) return <div className="p-4 text-slate-400 font-bold animate-pulse">Cargando contratos...</div>
 
   if (contracts.length === 0) {
     return (
-      <div className="p-8 text-center bg-slate-900/50 rounded-xl border border-dashed border-slate-700">
-        <p className="text-slate-500">No hay contratos registrados.</p>
+      <div className="p-8 text-center bg-slate-900/50 rounded-2xl border border-dashed border-slate-800"> 
+        <p className="text-slate-500 font-bold italic">No hay contratos registrados.</p>
       </div>
     )
   }
 
   return (
-    <div className="grid gap-4">
-      {contracts.map((contract) => {
-        const status = getExpirationStatus(contract.end_date)
-        return (
-          <div 
-            key={contract.id} 
-            className={`p-4 bg-slate-900 border rounded-2xl transition-all duration-300 hover:scale-[1.01] ${status.color.split(' ')[2]}`}
-          >
-            <div className="flex justify-between items-start">
-              <div className="space-y-2">
-                <div className="flex items-center gap-2">
-                  <span className={`text-[10px] px-2 py-0.5 rounded-full border font-bold uppercase tracking-tighter ${status.color}`}>
-                    {status.icon} {status.label}
-                  </span>
-                </div>
-                <h3 className="font-black text-white text-lg">{contract.tenant?.full_name}</h3>
-                <p className="text-xs text-blue-400 font-bold uppercase tracking-widest">
-                  {contract.unit?.building?.name} · Depto {contract.unit?.unit_number}
-                </p>
-                <div className="flex gap-4 text-[10px] text-slate-500 font-medium">
-                  <span>INICIO: {new Date(contract.start_date).toLocaleDateString('es-PY')}</span>
-                  <span>FIN: {new Date(contract.end_date).toLocaleDateString('es-PY')}</span>
+    <div className="grid gap-6">
+      {contracts.map((contract) => (
+        <div
+          key={contract.id}
+          onClick={() => onViewDetails(contract.id)}
+          className="p-6 bg-slate-900 border border-slate-800 rounded-2xl hover:border-blue-500/50 transition-all shadow-xl group cursor-pointer"
+        >
+          <div className="flex justify-between items-start">
+            <div className="space-y-3">
+              <div className="flex items-center gap-3">
+                <span className="text-2xl">📄</span>
+                <div>
+                  <h3 className="text-xl font-black text-white tracking-tight group-hover:text-blue-400 transition-colors uppercase">
+                    {contract.tenant?.full_name}
+                  </h3>
+                  <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">
+                    Contrato #{contract.id.slice(0, 8).toUpperCase()}
+                  </p>
                 </div>
               </div>
-              
-              <div className="text-right flex flex-col items-end gap-3">
-                <p className="text-xl text-emerald-400 font-black tracking-tight">
-                  Gs. {formatPrice(contract.monthly_amount)}
-                </p>
-                <div className="flex gap-2">
-                  <button 
-                    onClick={() => onViewDetails(contract.id)}
-                    className="flex items-center gap-2 text-[10px] bg-blue-600 hover:bg-blue-500 text-white px-3 py-1.5 rounded-lg transition-all font-bold uppercase"
-                  >
-                    💰 Pagos
-                  </button>
-                  {contract.contract_url && (
-                    <a 
-                      href={contract.contract_url} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-2 text-[10px] bg-slate-800 hover:bg-slate-700 text-blue-300 px-3 py-1.5 rounded-lg transition-all font-bold uppercase"
-                    >
-                      📄 PDF
-                    </a>
-                  )}
+
+              <div className="flex flex-wrap gap-3">
+                <div className="flex items-center gap-2 text-xs font-bold text-emerald-400 bg-emerald-500/10 px-3 py-1.5 rounded-lg">
+                  <span>🏢</span>
+                  {contract.unit?.building?.name} - {contract.unit?.unit_number}
+                </div>
+                <div className="flex items-center gap-2 text-xs font-bold text-blue-400 bg-blue-500/10 px-3 py-1.5 rounded-lg">
+                  <span>💰</span>
+                  Gs. {contract.monthly_amount.toLocaleString("es-PY")}
                 </div>
               </div>
             </div>
+
+            <div className="text-right flex flex-col items-end gap-2">
+              <span className={`text-[10px] uppercase px-3 py-1.5 rounded-full font-black tracking-tighter border ${
+                contract.status === "active" ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20" :
+                contract.status === "finished" ? "bg-blue-500/10 text-blue-500 border-blue-500/20" :
+                "bg-orange-500/10 text-orange-500 border-orange-500/20"
+              }`}>
+                {contract.status === "active" ? "Vigente" :
+                 contract.status === "finished" ? "Finalizado" : "Cancelado"}
+              </span>
+              <p className="text-[10px] text-slate-600 font-bold uppercase">
+                Vence: {new Date(contract.end_date).toLocaleDateString("es-PY")}
+              </p>
+            </div>
           </div>
-        )
-      })}
+        </div>
+      ))}
     </div>
   )
 }
+

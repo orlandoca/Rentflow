@@ -2,7 +2,11 @@
 import { supabase } from "@/lib/supabase"
 import { Building } from "@/types"
 
-export default function BuildingList() {
+interface BuildingListProps {
+  onEdit: (building: Building) => void // FunciÃ³n para avisar quÃ© edificio editar
+}
+
+export default function BuildingList({ onEdit }: BuildingListProps) {
   const [buildings, setBuildings] = useState<Building[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -60,7 +64,7 @@ export default function BuildingList() {
               </p>
             </div>
 
-            <div className="text-right">
+            <div className="flex flex-col items-end gap-3">
               <span className={`text-[10px] uppercase px-3 py-1.5 rounded-full font-black tracking-tighter border ${
                 building.status === "available" ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20" :
                 building.status === "rented" ? "bg-blue-500/10 text-blue-500 border-blue-500/20" :
@@ -69,6 +73,15 @@ export default function BuildingList() {
                 {building.status === "available" ? "Disponible" :
                  building.status === "rented" ? "Alquilado" : "Mantenimiento"}
               </span>
+
+              {/* BOTÃ“N DE EDITAR */}
+              <button
+                onClick={() => onEdit(building)}
+                className="w-8 h-8 flex items-center justify-center bg-slate-800 hover:bg-blue-600 text-slate-400 hover:text-white rounded-lg transition-all border border-slate-700 hover:border-blue-500 shadow-lg"
+                title="Editar Datos del Edificio"
+              >
+                ✏️
+              </button>
             </div>
           </div>
         </div>

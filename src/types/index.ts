@@ -14,8 +14,9 @@ export interface Building {
   name: string
   address: string | null
   description: string | null
-  owner_name: string // Nuevo campo dinÃ¡mico
-  status: 'available' | 'rented' | 'maintenance'
+  owner_name: string
+  owner_ci: string // Nuevo campo
+  status: "available" | "rented" | "maintenance"
   created_at: string
   updated_at: string
 }
@@ -27,7 +28,7 @@ export interface Unit {
   floor: string | null
   description: string | null
   price: number
-  status: 'available' | 'rented' | 'maintenance'
+  status: "available" | "rented" | "maintenance"
   created_at: string
   updated_at: string
   building?: Building
@@ -41,7 +42,7 @@ export interface Contract {
   end_date: string
   monthly_amount: number
   deposit_amount: number
-  status: 'active' | 'finished' | 'cancelled'
+  status: "active" | "finished" | "cancelled"
   contract_url: string | null
   created_at: string
   updated_at: string
@@ -55,7 +56,8 @@ export interface Payment {
   amount: number
   payment_date: string
   month_covered: string
-  payment_method: 'cash' | 'transfer' | 'check'
+  payment_method: "cash" | "transfer" | "check"
   notes: string | null
   created_at: string
 }
+
