@@ -4,6 +4,7 @@
 - **Frontend**: React 19 + Vite.
 - **Estilos**: Tailwind CSS v4.
 - **Backend-as-a-Service**: Supabase.
+- **Autenticación**: Supabase Auth con Context API para persistencia de sesión.
 - **PDF Engine**: jsPDF.
 
 ## Esquema de Base de Datos (PostgreSQL)

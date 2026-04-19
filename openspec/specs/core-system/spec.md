@@ -9,6 +9,7 @@ Sistema integral de gestión de alquileres para el mercado paraguayo, enfocado e
 - **Departamentos (Unidades)**: Unidades funcionales con precio y estado.
 - **Contratos**: Vínculo legal entre inquilino y unidad con montos, fechas y respaldo físico (PDF).
 - **Pagos**: Registro de mensualidades cobradas con generación de recibos.
+- **Autenticación**: Acceso restringido mediante Supabase Auth (Email/Password) para administradores.
 
 ## Reglas de Negocio Implementadas
 - **TDD**: Cobertura de tests para componentes críticos.
