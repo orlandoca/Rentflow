@@ -36,6 +36,7 @@
 *   **Creación**: Vínculo entre inquilino y unidad.
 *   **Parámetros**: Fecha de inicio/fin, monto mensual y depósito de garantía.
 *   **Documentación**: Generación de PDF del contrato (borrador) y posibilidad de subir el contrato firmado a Supabase Storage.
+*   **Pagarés**: Generación automática de pagarés por cada cuota, con persistencia y acceso para impresión desde el detalle del contrato.
 
 ### 4.5. Control de Pagos
 *   **Registro**: Carga de mensualidades cobradas.
@@ -58,6 +59,7 @@
 *   **Units**: `id, building_id, unit_number, floor, price, status`.
 *   **Contracts**: `id, tenant_id, unit_id, start_date, end_date, monthly_amount, deposit_amount, status, contract_url`.
 *   **Payments**: `id, contract_id, amount, payment_date, month_covered, payment_method, notes`.
+*   **Promissory_notes**: `id, contract_id, quota_number, due_date, status`.
 
 ---
 

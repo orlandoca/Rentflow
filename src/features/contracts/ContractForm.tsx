@@ -69,11 +69,11 @@ export default function ContractForm({ onSuccess }: ContractFormProps) {
         const { data: { publicUrl } } = supabase.storage.from("contracts").getPublicUrl(filePath)   
         contract_url = publicUrl
       }
-      const { error: contractError } = await supabase.from("contracts").insert({ ...formData, contract_url })
+      const { data: newContract, error: contractError } = await supabase.from("contracts").insert({ ...formData, contract_url }).select().single()
       if (contractError) throw contractError
       await supabase.from("units").update({ status: "rented" }).eq("id", formData.unit_id)
 
-      if (generatePromissoryNotes) {
+      if (generatePromissoryNotes && newContract) {
         const tenant = tenants.find(t => t.id === formData.tenant_id)
         const unit = units.find(u => u.id === formData.unit_id)
         if (tenant && unit) {
@@ -84,9 +84,17 @@ export default function ContractForm({ onSuccess }: ContractFormProps) {
           let monthsDiff = endDate.getMonth() - startDate.getMonth()
           let totalMonths = yearsDiff * 12 + monthsDiff + 1
           
+          const notes = []
           for (let i = 0; i < totalMonths; i++) {
             const dueDate = new Date(startDate)
             dueDate.setMonth(startDate.getMonth() + i)
+            
+            notes.push({
+              contract_id: newContract.id,
+              quota_number: i + 1,
+              due_date: dueDate.toISOString().split("T")[0],
+              status: "pending"
+            })
             
             generatePromissoryNotePDF({
               tenant,
@@ -98,6 +106,7 @@ export default function ContractForm({ onSuccess }: ContractFormProps) {
               depositAmount: formData.deposit_amount
             }, i + 1, dueDate)
           }
+          await supabase.from("promissory_notes").insert(notes)
         }
       }
       onSuccess()

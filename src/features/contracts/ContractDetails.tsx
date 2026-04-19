@@ -2,28 +2,32 @@ import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { Contract, Payment } from '@/types'
 import { Button } from '@/components/ui/button'
-import { generateReceiptPDF } from '@/lib/pdfGenerators'
+import { generateReceiptPDF, generatePromissoryNotePDF } from '@/lib/pdfGenerators'
 
 interface ContractDetailsProps {
   contractId: string
   onBack: () => void
 }
 
+interface PromissoryNote {
+  id: string
+  contract_id: string
+  quota_number: number
+  due_date: string
+  status: string
+}
+
 export default function ContractDetails({ contractId, onBack }: ContractDetailsProps) {
   const [contract, setContract] = useState<Contract | null>(null)
   const [payments, setPayments] = useState<Payment[]>([])
+  const [promissoryNotes, setPromissoryNotes] = useState<PromissoryNote[]>([])
   const [loading, setLoading] = useState(true)
-  const [isPaying, setIsPaying] = useState(false)
-  const [selectedMonth, setSelectedMonth] = useState('')
-
-  useEffect(() => {
-    fetchDetails()
-  }, [contractId])
+// ... (rest of imports and component state setup)
 
   async function fetchDetails() {
     try {
       setLoading(true)
-      const [contractRes, paymentsRes] = await Promise.all([
+      const [contractRes, paymentsRes, notesRes] = await Promise.all([
         supabase
           .from('contracts')
           .select('*, tenant:tenants(*), unit:units(*, building:buildings(*))')
@@ -33,17 +37,60 @@ export default function ContractDetails({ contractId, onBack }: ContractDetailsP
           .from('payments')
           .select('*')
           .eq('contract_id', contractId)
-          .order('month_covered', { ascending: true })
+          .order('month_covered', { ascending: true }),
+        supabase
+          .from('promissory_notes')
+          .select('*')
+          .eq('contract_id', contractId)
+          .order('quota_number', { ascending: true })
       ])
 
       if (contractRes.data) setContract(contractRes.data as any)
       if (paymentsRes.data) setPayments(paymentsRes.data)
+      if (notesRes.data) setPromissoryNotes(notesRes.data)
     } catch (error) {
       console.error('Error fetching details:', error)
     } finally {
       setLoading(false)
     }
   }
+
+// ... (existing helper methods: getPendingMonths, handleAddPayment, handleDownloadReceipt)
+
+  const handleDownloadNote = (note: PromissoryNote) => {
+    if (!contract || !contract.tenant || !contract.unit || !contract.unit.building) return
+    generatePromissoryNotePDF({
+      tenant: contract.tenant,
+      unit: contract.unit,
+      building: contract.unit.building,
+      startDate: contract.start_date,
+      endDate: contract.end_date,
+      monthlyAmount: contract.monthly_amount,
+      depositAmount: contract.deposit_amount
+    }, note.quota_number, new Date(note.due_date + 'T00:00:00'))
+  }
+
+// ... (render return statement)
+      <section className="space-y-4">
+        <h3 className="text-[10px] font-black text-slate-600 uppercase tracking-[0.3em]">Pagarés Asociados</h3>
+        <div className="grid gap-3">
+          {promissoryNotes.length === 0 ? (
+            <p className="text-xs text-slate-600 font-bold">No se generaron pagarés para este contrato.</p>
+          ) : (
+            promissoryNotes.map(note => (
+              <div key={note.id} className="p-4 bg-slate-900/40 border border-slate-800 rounded-2xl flex justify-between items-center">
+                <div className="flex items-center gap-4">
+                  <div className="text-slate-400 font-bold text-xs uppercase">Cuota {note.quota_number}</div>
+                  <div className="text-slate-500 text-xs italic">Vence: {new Date(note.due_date + 'T00:00:00').toLocaleDateString()}</div>
+                </div>
+                <Button variant="ghost" onClick={() => handleDownloadNote(note)} className="text-blue-400 hover:text-blue-300 font-bold text-xs h-8">Descargar</Button>
+              </div>
+            ))
+          )}
+        </div>
+      </section>
+// ...
+
 
   const getPendingMonths = () => {
     if (!contract) return []
