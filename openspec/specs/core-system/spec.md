@@ -22,3 +22,10 @@ Sistema integral de gestión de alquileres para el mercado paraguayo, enfocado e
 - **Supabase Auth/DB/Storage**: Persistencia de datos y archivos.
 - **Tailwind v4**: Estética moderna con glassmorphism.
 - **jsPDF**: Motor de generación de documentos.
+- **Vercel**: Plataforma de hosting con CI/CD automático.
+
+## Requerimientos de Infraestructura
+- **Runtime**: Node.js >= 20.x.
+- **TypeScript**: Configurado para ignorar deprecaciones de `baseUrl` (versión 6.0+).
+- **Entorno**: Variables de entorno `VITE_SUPABASE_URL` y `VITE_SUPABASE_ANON_KEY` configuradas en el panel de Vercel.
+- **Build Pipeline**: Comando `npm run build` ejecutado en cada push a `main`.

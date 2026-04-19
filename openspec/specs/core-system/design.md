@@ -15,6 +15,12 @@
 - `payments`: `contract_id`, `month_covered` (date), `amount`.
 
 ## Decisiones Clave
-- **Hybrid PDF**: Se generan borradores automáticos pero se permite subir el firmado oficial a Storage.
+- **Infraestructura**: Deploy en Vercel con integración automática desde GitHub.
+- **Configuración de Build**:
+  - `tsconfig.app.json`: Se habilitó `ignoreDeprecations: "6.0"` para compatibilidad con `baseUrl` en TypeScript 6.0+.
+  - `vite.config.ts`: Se migró `defineConfig` a `vitest/config` para soporte nativo de la propiedad `test`.
+  - **Tipado de Vite**: Se agregó `vite/client` a los tipos globales para reconocer variables de entorno y archivos CSS.
+- **Hybrid PDF**:
+ Se generan borradores automáticos pero se permite subir el firmado oficial a Storage.
 - **Meses Pendientes**: Se calculan en el cliente comparando el `start_date` del contrato vs registros en `payments`.
 - **Precios**: Todo en Guaraníes (Gs.) usando `Intl.NumberFormat('es-PY')`.
