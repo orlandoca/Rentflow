@@ -102,45 +102,32 @@ export const generateContractPDF = (data: ContractData) => {
   window.open(blobUrl, "_blank")
 }
 
-export const generateReceiptPDF = (data: ReceiptData) => {
+export const generatePromissoryNotePDF = (data: ContractData, quotaNumber: number, dueDate: Date) => {
   const doc = new jsPDF({ orientation: "landscape", unit: "mm", format: [210, 100] })
-  const monthName = new Date(data.payment.month_covered + "T00:00:00").toLocaleDateString("es-PY", { month: "long", year: "numeric" })
-  const paymentDate = new Date(data.payment.payment_date).toLocaleDateString("es-PY")
-  doc.setLineWidth(0.5)
+  
   doc.rect(5, 5, 200, 90)
-  doc.setLineWidth(0.1)
-  doc.line(140, 5, 140, 95)
-  doc.setFontSize(18)
+  
+  doc.setFontSize(14)
   doc.setFont("helvetica", "bold")
-  doc.text("RECIBO DE DINERO", 15, 15)
-  doc.setFontSize(12)
-  doc.text("NÂº RF-" + data.payment.id.slice(0, 8).toUpperCase(), 100, 15)
-  doc.setFillColor(240, 240, 240)
-  doc.rect(15, 20, 115, 10, "F")
-  doc.text("Gs. " + formatPrice(data.payment.amount), 125, 27, { align: "right" })
-  doc.setFont("helvetica", "normal")
+  doc.text("PAGARÉ", 105, 15, { align: "center" })
+  
   doc.setFontSize(10)
-  let y = 40
-  doc.text("Recibimos de: " + data.tenant.full_name, 15, y)
-  y += 7
-  doc.text("La suma de: GuaranÃ­es " + data.payment.amount.toLocaleString("es-PY"), 15, y)
-  y += 7
-  doc.text("En concepto de: Alquiler mes de " + monthName, 15, y)
-  y += 7
-  doc.text("Unidad: " + data.building.name + " - Depto " + data.unit.unit_number, 15, y)
-  doc.setFontSize(9)
-  doc.text("Fecha de cobro: " + paymentDate, 15, 80)
-  doc.line(80, 85, 130, 85)
-  doc.text("Firma Recaudador", 90, 90)
-  doc.setFont("helvetica", "bold")
-  doc.text("CONTROL", 145, 15)
   doc.setFont("helvetica", "normal")
-  doc.setFontSize(8)
-  doc.text("Inquilino: " + data.tenant.full_name, 145, 25)
-  doc.text("Mes: " + monthName, 145, 32)
-  doc.text("Monto: " + formatPrice(data.payment.amount), 145, 39)
-  doc.text("Fecha: " + paymentDate, 145, 46)
-  const blobUrl = doc.output("bloburl")
-  window.open(blobUrl, "_blank")
+  doc.text(`Nº de Cuota: ${quotaNumber}`, 15, 25)
+  doc.text(`Vencimiento: ${dueDate.toLocaleDateString("es-PY")}`, 160, 25)
+  
+  doc.text(`DEBE(MOS) Y PAGARÉ(MOS) INCONDICIONALMENTE A LA ORDEN DE:`, 15, 40)
+  doc.setFont("helvetica", "bold")
+  doc.text(data.building.owner_name || "PROPIETARIO", 15, 45)
+  
+  doc.setFont("helvetica", "normal")
+  doc.text(`LA SUMA DE GUARANÍES: ${data.monthlyAmount.toLocaleString("es-PY")}`, 15, 55)
+  
+  doc.text(`DEUDOR: ${data.tenant.full_name} - C.I. Nº: ${data.tenant.ci}`, 15, 65)
+  
+  doc.line(130, 85, 195, 85)
+  doc.text("Firma del Deudor", 162.5, 90, { align: "center" })
+  
+  doc.save(`Pagare_Cuota_${quotaNumber}_${data.tenant.full_name}.pdf`)
 }
 
