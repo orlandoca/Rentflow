@@ -26,10 +26,6 @@ export default function BuildingList() {
     fetchBuildings()
   }, [])
 
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('es-PY').format(price)
-  }
-
   if (loading) return <div className="p-4 text-slate-400">Cargando edificios...</div>
 
   if (buildings.length === 0) {

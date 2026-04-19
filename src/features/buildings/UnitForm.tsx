@@ -9,7 +9,7 @@ interface UnitFormProps {
 
 export default function UnitForm({ onSuccess }: UnitFormProps) {
   const [loading, setLoading] = useState(false)
-  const [buildings, setBuildings] = useState<Building[]>([])
+  const [buildings, setBuildings] = useState<Pick<Building, 'id' | 'name'>[]>([])
   const [formData, setFormData] = useState({
     building_id: '',
     unit_number: '',
