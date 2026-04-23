@@ -21,7 +21,8 @@ vi.mock('@/lib/supabase', () => ({
 
 describe('BuildingList', () => {
   it('debe mostrar la lista de edificios', async () => {
-    render(<BuildingList />)
+    const mockOnEdit = vi.fn()
+    render(<BuildingList onEdit={mockOnEdit} />)
     
     await waitFor(() => {
       expect(screen.getByText(/Edificio Plaza/i)).toBeInTheDocument()

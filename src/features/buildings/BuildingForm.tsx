@@ -16,7 +16,7 @@ export default function BuildingForm({ onSuccess, building }: BuildingFormProps)
     owner_ci: "2.362.226",
     address: "",
     description: "",
-    status: "available" as const
+    status: "available", // No usar 'as const' aquí para permitir todos los estados de Building.status
   })
 
   useEffect(() => {

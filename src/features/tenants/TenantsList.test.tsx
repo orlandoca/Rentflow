@@ -22,7 +22,8 @@ vi.mock('@/lib/supabase', () => ({
 
 describe('TenantsList', () => {
   it('debe mostrar la lista de inquilinos', async () => {
-    render(<TenantsList />)
+    const mockOnEdit = vi.fn()
+    render(<TenantsList onEdit={mockOnEdit} />)
     
     // Debería mostrar los nombres de los inquilinos mockeados
     await waitFor(() => {
@@ -43,7 +44,7 @@ describe('TenantsList', () => {
       }))
     } as any)
 
-    render(<TenantsList />)
+    render(<TenantsList onEdit={vi.fn()} />)
     
     await waitFor(() => {
       expect(screen.getByText(/No hay inquilinos registrados/i)).toBeInTheDocument()

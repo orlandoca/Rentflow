@@ -22,7 +22,13 @@ export default function ContractDetails({ contractId, onBack }: ContractDetailsP
   const [payments, setPayments] = useState<Payment[]>([])
   const [promissoryNotes, setPromissoryNotes] = useState<PromissoryNote[]>([])
   const [loading, setLoading] = useState(true)
+  const [isPaying, setIsPaying] = useState(false)
+  const [selectedMonth, setSelectedMonth] = useState<string | null>(null)
 // ... (rest of imports and component state setup)
+
+  useEffect(() => {
+    fetchDetails()
+  }, [contractId])
 
   async function fetchDetails() {
     try {
@@ -258,7 +264,7 @@ export default function ContractDetails({ contractId, onBack }: ContractDetailsP
                     name="month_covered" 
                     type="date" 
                     required 
-                    value={selectedMonth}
+                    value={selectedMonth || ""}
                     onChange={(e) => setSelectedMonth(e.target.value)}
                     className="w-full bg-blue-700/50 border-none rounded-xl p-4 text-white text-sm font-black focus:ring-2 focus:ring-white outline-none" 
                   />

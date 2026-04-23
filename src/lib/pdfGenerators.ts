@@ -131,3 +131,28 @@ export const generatePromissoryNotePDF = (data: ContractData, quotaNumber: numbe
   doc.save(`Pagare_Cuota_${quotaNumber}_${data.tenant.full_name}.pdf`)
 }
 
+export const generateReceiptPDF = (data: ReceiptData) => {
+  const doc = new jsPDF({ orientation: "landscape", unit: "mm", format: [210, 100] })
+
+  doc.rect(5, 5, 200, 90)
+
+  doc.setFontSize(16)
+  doc.setFont("helvetica", "bold")
+  doc.text("RECIBO DE DINERO", 105, 15, { align: "center" })
+
+  doc.setFontSize(10)
+  doc.setFont("helvetica", "normal")
+  doc.text(`Recibo No.: ${data.payment.id.substring(0, 8)}`, 15, 25)
+  doc.text(`Fecha: ${new Date(data.payment.payment_date).toLocaleDateString("es-PY")}`, 160, 25)
+
+  doc.text(`RECIBÍ de: ${data.tenant.full_name} con C.I. Nº ${data.tenant.ci}`, 15, 40)
+  doc.text(`la suma de GUARANÍES: ${data.payment.amount.toLocaleString("es-PY")} (${formatPrice(data.payment.amount)})`, 15, 50)
+  doc.text(`en concepto de Alquiler de la unidad ${data.unit.unit_number} del edificio ${data.building.name}`, 15, 55)
+  doc.text(`correspondiente al mes de ${new Date(data.payment.month_covered + 'T00:00:00').toLocaleDateString("es-PY", { month: 'long', year: 'numeric' })}.`, 15, 60)
+
+  doc.line(130, 80, 195, 80)
+  doc.text("Firma del Propietario/Administrador", 162.5, 85, { align: "center" })
+
+  doc.save(`Recibo_Pago_${data.payment.id.substring(0, 8)}.pdf`)
+}
+
