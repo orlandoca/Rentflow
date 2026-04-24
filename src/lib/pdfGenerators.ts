@@ -129,6 +129,7 @@ export const generatePromissoryNotePDF = (data: ContractData, quotaNumber: numbe
   doc.text("Firma del Deudor", 162.5, 90, { align: "center" })
   
   doc.save(`Pagare_Cuota_${quotaNumber}_${data.tenant.full_name}.pdf`)
+  return doc.output('blob')
 }
 
 export const generateReceiptPDF = (data: ReceiptData) => {
