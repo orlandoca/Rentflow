@@ -16,6 +16,10 @@ export default function UnitForm({ onSuccess }: UnitFormProps) {
     floor: '',
     description: '',
     price: 0,
+    bedrooms: 1,
+    bathrooms: 1,
+    has_balcony: false,
+    sq_meters: 0,
     status: 'available' as const
   })
 
@@ -39,7 +43,18 @@ export default function UnitForm({ onSuccess }: UnitFormProps) {
 
       if (error) throw error
       
-      setFormData({ building_id: '', unit_number: '', floor: '', description: '', price: 0, status: 'available' })
+      setFormData({ 
+        building_id: '', 
+        unit_number: '', 
+        floor: '', 
+        description: '', 
+        price: 0, 
+        bedrooms: 1,
+        bathrooms: 1,
+        has_balcony: false,
+        sq_meters: 0,
+        status: 'available' 
+      })
       onSuccess()
     } catch (error) {
       console.error('Error saving unit:', error)
@@ -50,14 +65,16 @@ export default function UnitForm({ onSuccess }: UnitFormProps) {
   }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-    const value = e.target.type === 'number' ? Number(e.target.value) : e.target.value
-    setFormData({ ...formData, [e.target.name]: value })
+    const { name, value, type } = e.target as HTMLInputElement
+    const finalValue = type === 'checkbox' ? (e.target as HTMLInputElement).checked : 
+                       type === 'number' ? Number(value) : value
+    setFormData({ ...formData, [name]: finalValue })
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 p-6 bg-slate-900 rounded-2xl border border-slate-800">
+    <form onSubmit={handleSubmit} className="space-y-6 p-6 bg-slate-900 rounded-2xl border border-slate-800 shadow-2xl">
       <div className="space-y-2">
-        <label htmlFor="building_id" className="text-sm font-medium text-slate-300">
+        <label htmlFor="building_id" className="text-sm font-bold text-slate-400 uppercase tracking-wider">
           Edificio
         </label>
         <select
@@ -66,7 +83,7 @@ export default function UnitForm({ onSuccess }: UnitFormProps) {
           required
           value={formData.building_id}
           onChange={handleChange}
-          className="w-full px-4 py-2 bg-slate-950 border border-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-white appearance-none"
+          className="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500 text-white outline-none"
         >
           <option value="">Seleccionar Edificio...</option>
           {buildings.map(b => (
@@ -75,9 +92,9 @@ export default function UnitForm({ onSuccess }: UnitFormProps) {
         </select>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="space-y-2">
-          <label htmlFor="unit_number" className="text-sm font-medium text-slate-300">
+          <label htmlFor="unit_number" className="text-sm font-bold text-slate-400 uppercase tracking-wider">
             Número de Depto
           </label>
           <input
@@ -87,13 +104,13 @@ export default function UnitForm({ onSuccess }: UnitFormProps) {
             required
             value={formData.unit_number}
             onChange={handleChange}
-            className="w-full px-4 py-2 bg-slate-950 border border-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-white"
+            className="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500 text-white outline-none"
             placeholder="Ej: 201-A"
           />
         </div>
 
         <div className="space-y-2">
-          <label htmlFor="floor" className="text-sm font-medium text-slate-300">
+          <label htmlFor="floor" className="text-sm font-bold text-slate-400 uppercase tracking-wider">
             Piso
           </label>
           <input
@@ -102,14 +119,33 @@ export default function UnitForm({ onSuccess }: UnitFormProps) {
             type="text"
             value={formData.floor}
             onChange={handleChange}
-            className="w-full px-4 py-2 bg-slate-950 border border-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-white"
+            className="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500 text-white outline-none"
             placeholder="Ej: 2do"
           />
         </div>
       </div>
 
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 bg-slate-950/50 p-4 rounded-xl border border-slate-800/50">
+        <div className="space-y-2">
+          <label htmlFor="bedrooms" className="text-[10px] font-bold text-slate-500 uppercase">Habit.</label>
+          <input name="bedrooms" type="number" min="1" value={formData.bedrooms} onChange={handleChange} className="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 text-white text-center outline-none" />
+        </div>
+        <div className="space-y-2">
+          <label htmlFor="bathrooms" className="text-[10px] font-bold text-slate-500 uppercase">Baños</label>
+          <input name="bathrooms" type="number" min="1" value={formData.bathrooms} onChange={handleChange} className="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 text-white text-center outline-none" />
+        </div>
+        <div className="space-y-2">
+          <label htmlFor="sq_meters" className="text-[10px] font-bold text-slate-500 uppercase">M2</label>
+          <input name="sq_meters" type="number" value={formData.sq_meters} onChange={handleChange} className="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 text-white text-center outline-none" />
+        </div>
+        <div className="flex flex-col items-center justify-center space-y-2">
+          <label htmlFor="has_balcony" className="text-[10px] font-bold text-slate-500 uppercase">Balcón</label>
+          <input name="has_balcony" type="checkbox" checked={formData.has_balcony} onChange={handleChange} className="w-5 h-5 rounded border-slate-700 bg-slate-950 text-blue-600 focus:ring-blue-500" />
+        </div>
+      </div>
+
       <div className="space-y-2">
-        <label htmlFor="price" className="text-sm font-medium text-slate-300">
+        <label htmlFor="price" className="text-sm font-bold text-slate-400 uppercase tracking-wider">
           Precio de Alquiler (Gs.)
         </label>
         <input
@@ -119,23 +155,18 @@ export default function UnitForm({ onSuccess }: UnitFormProps) {
           required
           value={formData.price}
           onChange={handleChange}
-          className="w-full px-4 py-2 bg-slate-950 border border-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-white"
+          className="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-xl focus:ring-2 focus:ring-emerald-500 text-emerald-400 font-black outline-none"
           placeholder="2500000"
         />
       </div>
 
       <Button 
         type="submit" 
-        className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-4 rounded-lg transition-colors"
+        className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-black h-14 rounded-xl shadow-lg transition-all"
         disabled={loading || buildings.length === 0}
       >
         {loading ? 'Guardando...' : 'Guardar Departamento'}
       </Button>
-      {buildings.length === 0 && (
-        <p className="text-[10px] text-orange-500 text-center italic">
-          * Debes crear un edificio primero antes de registrar departamentos.
-        </p>
-      )}
     </form>
   )
 }

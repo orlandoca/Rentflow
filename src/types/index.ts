@@ -29,6 +29,10 @@ export interface Unit {
   description: string | null
   price: number
   status: "available" | "rented" | "maintenance"
+  bedrooms: number
+  bathrooms: number
+  has_balcony: boolean
+  sq_meters: number | null
   created_at: string
   updated_at: string
   building?: Building
