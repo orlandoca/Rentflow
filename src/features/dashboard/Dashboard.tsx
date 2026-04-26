@@ -7,6 +7,7 @@ export default function Dashboard() {
     totalUnits: 0,
     rentedUnits: 0,
     monthlyRevenue: 0,
+    monthlyExpenses: 0,
     expiringSoon: 0
   })
   const [loading, setLoading] = useState(true)
@@ -14,25 +15,31 @@ export default function Dashboard() {
   useEffect(() => {
     async function fetchStats() {
       try {
-        const [tenants, units, contracts] = await Promise.all([
+        const now = new Date()
+        const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString()
+        const thirtyDaysFromNow = new Date(now.getTime() + (30 * 24 * 60 * 60 * 1000))
+
+        const [tenants, units, contracts, expenses] = await Promise.all([
           supabase.from('tenants').select('id', { count: 'exact', head: true }),
           supabase.from('units').select('id, status'),
-          supabase.from('contracts').select('monthly_amount, end_date').eq('status', 'active')
+          supabase.from('contracts').select('monthly_amount, end_date').eq('status', 'active'),
+          supabase.from('expenses').select('amount').gte('expense_date', firstDayOfMonth)
         ])
-
-        const now = new Date()
-        const thirtyDaysFromNow = new Date(now.getTime() + (30 * 24 * 60 * 60 * 1000))
 
         const expiring = contracts.data?.filter(c => {
           const end = new Date(c.end_date)
           return end > now && end <= thirtyDaysFromNow
         }).length || 0
 
+        const totalRevenue = contracts.data?.reduce((sum, c) => sum + Number(c.monthly_amount), 0) || 0
+        const totalExpenses = expenses.data?.reduce((sum, e) => sum + Number(e.amount), 0) || 0
+
         setStats({
           totalTenants: tenants.count || 0,
           totalUnits: units.data?.length || 0,
           rentedUnits: units.data?.filter(u => u.status === 'rented').length || 0,
-          monthlyRevenue: contracts.data?.reduce((sum, c) => sum + Number(c.monthly_amount), 0) || 0,
+          monthlyRevenue: totalRevenue,
+          monthlyExpenses: totalExpenses,
           expiringSoon: expiring
         })
       } catch (error) {
@@ -48,57 +55,72 @@ export default function Dashboard() {
     return new Intl.NumberFormat('es-PY').format(price)
   }
 
-  if (loading) return <div className="p-4 text-slate-400">Cargando resumen...</div>
+  if (loading) return <div className="p-8 text-center text-slate-500 font-bold uppercase tracking-widest animate-pulse">Cargando inteligencia...</div>
 
   const occupancyRate = stats.totalUnits > 0 ? Math.round((stats.rentedUnits / stats.totalUnits) * 100) : 0
+  const netProfit = stats.monthlyRevenue - stats.monthlyExpenses
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {/* Tarjeta Recaudación */}
-        <div className="p-6 bg-gradient-to-br from-blue-600 to-blue-800 rounded-3xl shadow-xl shadow-blue-900/20">
-          <p className="text-blue-100 text-xs font-bold uppercase tracking-wider mb-1">Recaudación Mensual</p>
-          <h3 className="text-3xl font-black text-white">Gs. {formatPrice(stats.monthlyRevenue)}</h3>
-          <p className="text-blue-200 text-[10px] mt-4 font-medium italic">Basado en contratos activos</p>
+        <div className="p-6 bg-slate-900 border border-slate-800 rounded-3xl">
+          <p className="text-slate-500 text-[10px] font-black uppercase tracking-widest mb-1">Recaudación Bruta</p>
+          <h3 className="text-2xl font-black text-white">Gs. {formatPrice(stats.monthlyRevenue)}</h3>
+          <p className="text-blue-500 text-[9px] mt-4 font-bold uppercase">Mes en curso</p>
+        </div>
+
+        {/* Tarjeta Gastos */}
+        <div className="p-6 bg-slate-900 border border-slate-800 rounded-3xl">
+          <p className="text-slate-500 text-[10px] font-black uppercase tracking-widest mb-1">Gastos Mensuales</p>
+          <h3 className="text-2xl font-black text-red-500">Gs. {formatPrice(stats.monthlyExpenses)}</h3>
+          <p className="text-red-900 text-[9px] mt-4 font-bold uppercase">Egresos registrados</p>
+        </div>
+
+        {/* Tarjeta Utilidad Neta */}
+        <div className="p-6 bg-gradient-to-br from-emerald-600 to-emerald-800 rounded-3xl shadow-xl shadow-emerald-900/20">
+          <p className="text-emerald-100 text-[10px] font-black uppercase tracking-widest mb-1">Utilidad Neta</p>
+          <h3 className="text-2xl font-black text-white">Gs. {formatPrice(netProfit)}</h3>
+          <p className="text-emerald-200 text-[9px] mt-4 font-bold uppercase italic">Lo que queda libre</p>
         </div>
 
         {/* Tarjeta Ocupación */}
         <div className="p-6 bg-slate-900 border border-slate-800 rounded-3xl relative overflow-hidden">
-          <p className="text-slate-500 text-xs font-bold uppercase tracking-wider mb-1">Ocupación</p>
-          <h3 className="text-3xl font-black text-white">{occupancyRate}%</h3>
-          <div className="mt-4 w-full bg-slate-800 h-2 rounded-full overflow-hidden">
+          <p className="text-slate-500 text-[10px] font-black uppercase tracking-widest mb-1">Ocupación</p>
+          <h3 className="text-2xl font-black text-white">{occupancyRate}%</h3>
+          <div className="mt-4 w-full bg-slate-800 h-1.5 rounded-full overflow-hidden">
             <div 
-              className="bg-emerald-500 h-full transition-all duration-1000" 
+              className="bg-blue-500 h-full transition-all duration-1000" 
               style={{ width: `${occupancyRate}%` }}
             />
           </div>
-          <p className="text-slate-500 text-[10px] mt-2">
-            {stats.rentedUnits} de {stats.totalUnits} departamentos ocupados
+          <p className="text-slate-500 text-[9px] mt-2 font-bold uppercase">
+            {stats.rentedUnits} de {stats.totalUnits} deptos.
           </p>
-        </div>
-
-        {/* Tarjeta Alertas */}
-        <div className={`p-6 border rounded-3xl transition-all ${
-          stats.expiringSoon > 0 ? 'bg-orange-500/10 border-orange-500/50' : 'bg-slate-900 border-slate-800'
-        }`}>
-          <p className="text-slate-500 text-xs font-bold uppercase tracking-wider mb-1">Vencimientos Próximos</p>
-          <h3 className={`text-3xl font-black ${stats.expiringSoon > 0 ? 'text-orange-500' : 'text-white'}`}>
-            {stats.expiringSoon}
-          </h3>
-          <p className="text-slate-500 text-[10px] mt-4">Contratos que vencen en los próximos 30 días</p>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="p-8 bg-slate-900/50 border border-slate-800 border-dashed rounded-3xl flex flex-col items-center justify-center text-center">
-          <div className="w-12 h-12 bg-blue-500/10 rounded-full flex items-center justify-center text-blue-500 mb-4 text-xl">👤</div>
-          <h4 className="text-white font-bold">{stats.totalTenants} Inquilinos</h4>
-          <p className="text-slate-500 text-xs">Registrados en la plataforma</p>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className={`p-8 border rounded-[2rem] flex flex-col items-center justify-center text-center transition-all ${
+          stats.expiringSoon > 0 ? 'bg-orange-500/10 border-orange-500/50' : 'bg-slate-900/50 border-slate-800 border-dashed'
+        }`}>
+          <div className={`w-12 h-12 rounded-2xl flex items-center justify-center text-xl mb-4 ${
+            stats.expiringSoon > 0 ? 'bg-orange-500/20 text-orange-500' : 'bg-slate-800 text-slate-500'
+          }`}>⚠️</div>
+          <h4 className={`text-xl font-black ${stats.expiringSoon > 0 ? 'text-orange-500' : 'text-white'}`}>{stats.expiringSoon} Vencimientos</h4>
+          <p className="text-slate-500 text-[10px] font-bold uppercase mt-1">Próximos 30 días</p>
         </div>
-        <div className="p-8 bg-slate-900/50 border border-slate-800 border-dashed rounded-3xl flex flex-col items-center justify-center text-center">
-          <div className="w-12 h-12 bg-emerald-500/10 rounded-full flex items-center justify-center text-emerald-500 mb-4 text-xl">🏢</div>
-          <h4 className="text-white font-bold">{stats.totalUnits} Departamentos</h4>
-          <p className="text-slate-500 text-xs">En todos los edificios</p>
+
+        <div className="p-8 bg-slate-900/50 border border-slate-800 border-dashed rounded-[2rem] flex flex-col items-center justify-center text-center">
+          <div className="w-12 h-12 bg-blue-500/10 rounded-2xl flex items-center justify-center text-blue-500 mb-4 text-xl">👤</div>
+          <h4 className="text-xl font-black text-white">{stats.totalTenants} Inquilinos</h4>
+          <p className="text-slate-500 text-[10px] font-bold uppercase mt-1">Registrados</p>
+        </div>
+
+        <div className="p-8 bg-slate-900/50 border border-slate-800 border-dashed rounded-[2rem] flex flex-col items-center justify-center text-center">
+          <div className="w-12 h-12 bg-indigo-500/10 rounded-2xl flex items-center justify-center text-indigo-500 mb-4 text-xl">🏢</div>
+          <h4 className="text-xl font-black text-white">{stats.totalUnits} Unidades</h4>
+          <p className="text-slate-500 text-[10px] font-bold uppercase mt-1">Inventario Total</p>
         </div>
       </div>
     </div>
