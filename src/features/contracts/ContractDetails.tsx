@@ -145,6 +145,41 @@ export default function ContractDetails({ contractId, onBack }: ContractDetailsP
     })
   }
 
+  const handleUploadContract = async (file: File | undefined) => {
+    if (!file || !contract) return
+    
+    try {
+      setLoading(true)
+      const fileExt = file.name.split('.').pop()
+      const fileName = `${contract.id}_${Math.random().toString(36).substring(7)}.${fileExt}`
+      const filePath = `${contract.tenant_id}/${fileName}`
+
+      const { error: uploadError } = await supabase.storage
+        .from('contracts')
+        .upload(filePath, file)
+
+      if (uploadError) throw uploadError
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('contracts')
+        .getPublicUrl(filePath)
+
+      const { error: updateError } = await supabase
+        .from('contracts')
+        .update({ contract_url: publicUrl })
+        .eq('id', contract.id)
+
+      if (updateError) throw updateError
+      
+      fetchDetails()
+    } catch (error) {
+      console.error('Error uploading contract:', error)
+      alert('Error al subir el archivo')
+    } finally {
+      setLoading(false)
+    }
+  }
+
   const formatPrice = (price: number) => new Intl.NumberFormat('es-PY').format(price)
   const formatMonth = (date: Date) => date.toLocaleDateString('es-PY', { month: 'long', year: 'numeric' })
 
@@ -249,6 +284,38 @@ export default function ContractDetails({ contractId, onBack }: ContractDetailsP
               <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mb-1">Garantía Activa</p>
               <p className="text-white font-black text-2xl tracking-tighter italic">Gs. {formatPrice(contract.deposit_amount)}</p>
             </div>
+          </div>
+
+          <div className="p-8 bg-slate-900 border border-slate-800 rounded-[2rem] space-y-6 shadow-xl">
+            <h4 className="text-[10px] font-black text-amber-500 uppercase tracking-[0.3em]">Documento Oficial</h4>
+            {contract.contract_url ? (
+              <div className="space-y-4">
+                <div className="flex items-center gap-3 text-emerald-500">
+                  <span className="text-xl">📄</span>
+                  <span className="text-xs font-bold uppercase">Contrato Escaneado</span>
+                </div>
+                <a 
+                  href={contract.contract_url} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="block w-full text-center py-3 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-xs font-black transition-all border border-slate-700"
+                >
+                  VER DOCUMENTO
+                </a>
+                <label className="block text-center text-[9px] text-slate-500 font-bold uppercase cursor-pointer hover:text-slate-300">
+                  Actualizar Archivo
+                  <input type="file" className="hidden" onChange={(e) => handleUploadContract(e.target.files?.[0])} />
+                </label>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <p className="text-[10px] text-slate-500 font-bold leading-relaxed">No se ha cargado el contrato firmado por las partes aún.</p>
+                <label className="block w-full py-4 bg-amber-600/10 border-2 border-dashed border-amber-600/30 hover:border-amber-600 hover:bg-amber-600/20 text-amber-500 rounded-xl text-center cursor-pointer transition-all">
+                  <span className="text-xs font-black uppercase">Subir Escaneado</span>
+                  <input type="file" className="hidden" onChange={(e) => handleUploadContract(e.target.files?.[0])} />
+                </label>
+              </div>
+            )}
           </div>
 
           {isPaying && (
