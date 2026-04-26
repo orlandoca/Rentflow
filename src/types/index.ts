@@ -62,3 +62,19 @@ export interface Payment {
   created_at: string
 }
 
+export type ExpenseCategory = 'mantenimiento' | 'impuestos' | 'servicios' | 'reparacion' | 'otros';
+
+export interface Expense {
+  id: string;
+  building_id: string;
+  unit_id: string | null;
+  amount: number;
+  category: ExpenseCategory;
+  description: string | null;
+  expense_date: string;
+  created_at: string;
+  // Joins opcionales
+  building?: Building;
+  unit?: Unit;
+}
+

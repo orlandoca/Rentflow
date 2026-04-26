@@ -1,4 +1,4 @@
-﻿import { useState } from "react"
+import { useState } from "react"
 import TenantsList from "@/features/tenants/TenantsList"
 import TenantForm from "@/features/tenants/TenantForm"
 import BuildingList from "@/features/buildings/BuildingList"
@@ -8,13 +8,15 @@ import UnitForm from "@/features/buildings/UnitForm"
 import ContractList from "@/features/contracts/ContractList"
 import ContractForm from "@/features/contracts/ContractForm"
 import ContractDetails from "@/features/contracts/ContractDetails"
+import ExpenseList from "@/features/expenses/ExpenseList"
+import ExpenseForm from "@/features/expenses/ExpenseForm"
 import Dashboard from "@/features/dashboard/Dashboard"
 import LoginPage from "@/features/auth/LoginPage"
 import { Button } from "@/components/ui/button"
 import { useAuth } from "@/lib/auth"
 import { Building, Tenant } from "@/types"
 
-type Tab = "dashboard" | "tenants" | "buildings" | "contracts"
+type Tab = "dashboard" | "tenants" | "buildings" | "contracts" | "expenses"
 type SubTab = "list" | "units"
 
 function App() {
@@ -49,6 +51,7 @@ function App() {
     { id: "tenants", label: "Inquilinos", icon: "👤" },
     { id: "buildings", label: "Edificios", icon: "🏢" },
     { id: "contracts", label: "Contratos", icon: "📄" },
+    { id: "expenses", label: "Gastos", icon: "💸" },
   ]
 
   if (loading) {
@@ -104,13 +107,13 @@ function App() {
                 }}
                 className={`${showForm ? "bg-slate-800" : "bg-emerald-600 hover:bg-emerald-500"} text-white rounded-xl px-6 font-bold shadow-lg transition-all hidden md:flex h-10`}
               >
-                {showForm ? "Volver" : `Nuevo ${activeTab === "tenants" ? "Inquilino" : activeTab === "buildings" ? (activeSubTab === "list" ? "Edificio" : "Depto") : "Contrato"}`}
+                {showForm ? "Volver" : `Nuevo ${activeTab === "tenants" ? "Inquilino" : activeTab === "buildings" ? (activeSubTab === "list" ? "Edificio" : "Depto") : activeTab === "expenses" ? "Gasto" : "Contrato"}`}
               </Button>
             )}
             <button
               onClick={signOut}
               className="w-10 h-10 bg-slate-900 border border-slate-800 rounded-xl flex items-center justify-center text-slate-400 hover:text-red-400 hover:bg-red-500/10 transition-all shadow-lg"     
-              title="Cerrar SesiÃ³n"
+              title="Cerrar Sesión"
             >
               🚪
             </button>
@@ -142,12 +145,14 @@ function App() {
                        editingBuilding ? `Editar Edificio: ${editingBuilding.name}` :
                        activeTab === "tenants" ? "Nuevo Inquilino" :
                        activeTab === "buildings" ? (activeSubTab === "list" ? "Registrar Edificio" : "Nuevo Departamento") :
+                       activeTab === "expenses" ? "Registrar Gasto" :
                        "Crear Contrato"}
                     </h2>
                     <p className="text-slate-500 text-sm mt-1">Completa los datos para el registro oficial.</p>
                   </div>
                   {activeTab === "tenants" ? <TenantForm tenant={editingTenant || undefined} onSuccess={handleSuccess} /> :
                    activeTab === "buildings" ? (activeSubTab === "list" ? <BuildingForm building={editingBuilding || undefined} onSuccess={handleSuccess} /> : <UnitForm onSuccess={handleSuccess} />) :
+                   activeTab === "expenses" ? <ExpenseForm onSuccess={handleSuccess} /> :
                    <ContractForm onSuccess={handleSuccess} />}
                 </section>
               ) : (
@@ -155,6 +160,7 @@ function App() {
                   {activeTab === "dashboard" ? <Dashboard key={refreshKey} /> :
                    activeTab === "tenants" ? <TenantsList key={`t-${refreshKey}`} onEdit={handleEditTenant} /> :
                    activeTab === "buildings" ? (activeSubTab === "list" ? <BuildingList key={`b-${refreshKey}`} onEdit={handleEditBuilding} /> : <UnitList key={`u-${refreshKey}`} />) :
+                   activeTab === "expenses" ? <ExpenseList key={`e-${refreshKey}`} /> :
                    <ContractList key={`c-${refreshKey}`} onViewDetails={(id) => setSelectedContractId(id)} />}
                 </section>
               )}
@@ -177,4 +183,3 @@ function App() {
 }
 
 export default App
-
