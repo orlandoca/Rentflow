@@ -1,4 +1,4 @@
-import { render, screen, fireEvent, waitFor } from "@testing-library/react"
+import { render, screen, fireEvent } from "@testing-library/react"
 import ExpenseForm from "./ExpenseForm"
 import { vi } from "vitest"
 import { supabase } from "@/lib/supabase"

@@ -1,7 +1,6 @@
 import { render, screen, waitFor } from "@testing-library/react"
 import Dashboard from "./Dashboard"
 import { vi } from "vitest"
-import { supabase } from "@/lib/supabase"
 
 // Mock de Supabase
 vi.mock("@/lib/supabase", () => ({
