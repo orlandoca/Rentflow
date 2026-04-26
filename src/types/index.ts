@@ -54,6 +54,7 @@ export interface Payment {
   id: string
   contract_id: string
   amount: number
+  receipt_number: number // Nuevo campo secuencial
   payment_date: string
   month_covered: string
   payment_method: "cash" | "transfer" | "check"

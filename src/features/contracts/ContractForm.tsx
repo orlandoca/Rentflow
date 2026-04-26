@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from "react"
+import { useState, useEffect } from "react"
 import { supabase } from "@/lib/supabase"
 import { Button } from "@/components/ui/button"
 import { Tenant, Unit } from "@/types"
@@ -85,6 +85,8 @@ export default function ContractForm({ onSuccess }: ContractFormProps) {
           let totalMonths = yearsDiff * 12 + monthsDiff + 1
           
           const notes = []
+          let masterDoc: any = null
+
           for (let i = 0; i < totalMonths; i++) {
             const dueDate = new Date(startDate)
             dueDate.setMonth(startDate.getMonth() + i)
@@ -96,7 +98,7 @@ export default function ContractForm({ onSuccess }: ContractFormProps) {
               status: "pending"
             })
             
-            generatePromissoryNotePDF({
+            masterDoc = generatePromissoryNotePDF({
               tenant,
               unit,
               building: (unit as any).building,
@@ -104,7 +106,11 @@ export default function ContractForm({ onSuccess }: ContractFormProps) {
               endDate: formData.end_date,
               monthlyAmount: formData.monthly_amount,
               depositAmount: formData.deposit_amount
-            }, i + 1, dueDate)
+            }, i + 1, dueDate, masterDoc || undefined)
+          }
+
+          if (masterDoc) {
+            masterDoc.save(`Pagares_Completos_${tenant.full_name}.pdf`)
           }
           await supabase.from("promissory_notes").insert(notes)
         }
@@ -166,7 +172,7 @@ export default function ContractForm({ onSuccess }: ContractFormProps) {
           <input id="start_date" name="start_date" type="date" required value={formData.start_date} onChange={(e) => setFormData(prev => ({...prev, start_date: e.target.value}))} className="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-white focus:ring-2 focus:ring-blue-500 outline-none" />
           <div className="flex gap-2">
             <button type="button" onClick={() => setQuickDate("start_date", "today")} className="text-[10px] bg-slate-800 hover:bg-slate-700 text-slate-300 px-2 py-1 rounded-md transition-colors">Hoy</button>
-            <button type="button" onClick={() => setQuickDate("start_date", "next_month")} className="text-[10px] bg-slate-800 hover:bg-slate-700 text-slate-300 px-2 py-1 rounded-md transition-colors">1Âº Mes PrÃ³ximo</button>
+            <button type="button" onClick={() => setQuickDate("start_date", "next_month")} className="text-[10px] bg-slate-800 hover:bg-slate-700 text-slate-300 px-2 py-1 rounded-md transition-colors">1º Mes Próximo</button>
           </div>
         </div>
         <div className="space-y-3">
@@ -174,8 +180,8 @@ export default function ContractForm({ onSuccess }: ContractFormProps) {
           <input id="end_date" name="end_date" type="date" required value={formData.end_date} onChange={(e) => setFormData(prev => ({...prev, end_date: e.target.value}))} className="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-white focus:ring-2 focus:ring-blue-500 outline-none" />
           <div className="flex gap-2">
             <button type="button" onClick={() => setQuickDate("end_date", "6m")} className="text-[10px] bg-slate-800 hover:bg-slate-700 text-slate-300 px-2 py-1 rounded-md transition-colors">+6 Meses</button>
-            <button type="button" onClick={() => setQuickDate("end_date", "1y")} className="text-[10px] bg-slate-800 hover:bg-slate-700 text-slate-300 px-2 py-1 rounded-md transition-colors">+1 AÃ±o</button>
-            <button type="button" onClick={() => setQuickDate("end_date", "2y")} className="text-[10px] bg-slate-800 hover:bg-slate-700 text-slate-300 px-2 py-1 rounded-md transition-colors">+2 AÃ±os</button>
+            <button type="button" onClick={() => setQuickDate("end_date", "1y")} className="text-[10px] bg-slate-800 hover:bg-slate-700 text-slate-300 px-2 py-1 rounded-md transition-colors">+1 Año</button>
+            <button type="button" onClick={() => setQuickDate("end_date", "2y")} className="text-[10px] bg-slate-800 hover:bg-slate-700 text-slate-300 px-2 py-1 rounded-md transition-colors">+2 Años</button>
           </div>
         </div>
       </div>
@@ -185,7 +191,7 @@ export default function ContractForm({ onSuccess }: ContractFormProps) {
           <input id="monthly_amount" name="monthly_amount" type="number" required value={formData.monthly_amount} onChange={(e) => setFormData(prev => ({...prev, monthly_amount: Number(e.target.value)}))} className="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-emerald-400 font-bold outline-none" />
         </div>
         <div className="space-y-2">
-          <label htmlFor="deposit_amount" className="text-sm font-bold text-slate-400 uppercase tracking-wider">GarantÃ­a (Gs.)</label>
+          <label htmlFor="deposit_amount" className="text-sm font-bold text-slate-400 uppercase tracking-wider">Garantía (Gs.)</label>
           <input id="deposit_amount" name="deposit_amount" type="number" value={formData.deposit_amount} onChange={(e) => setFormData(prev => ({...prev, deposit_amount: Number(e.target.value)}))} className="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-slate-300 outline-none" />
         </div>
       </div>
