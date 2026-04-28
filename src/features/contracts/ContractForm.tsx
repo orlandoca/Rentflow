@@ -32,8 +32,8 @@ export default function ContractForm({ onSuccess }: ContractFormProps) {
         supabase.from("tenants").select("*").order("full_name"),
         supabase.from("units").select("*, building:buildings(id, name, address, owner_name, owner_ci)").eq("status", "available")
       ])
-      if (tenantsRes.data) setTenants(tenantsRes.data as any)
-      if (unitsRes.data) setUnits(unitsRes.data as any)
+      if (tenantsRes.data) setTenants(tenantsRes.data as Tenant[])
+      if (unitsRes.data) setUnits(unitsRes.data as unknown as Unit[])
     }
     fetchData()
   }, [])
@@ -80,12 +80,12 @@ export default function ContractForm({ onSuccess }: ContractFormProps) {
           const startDate = new Date(formData.start_date)
           const endDate = new Date(formData.end_date)
           
-          let yearsDiff = endDate.getFullYear() - startDate.getFullYear()
-          let monthsDiff = endDate.getMonth() - startDate.getMonth()
-          let totalMonths = yearsDiff * 12 + monthsDiff + 1
+          const yearsDiff = endDate.getFullYear() - startDate.getFullYear()
+          const monthsDiff = endDate.getMonth() - startDate.getMonth()
+          const totalMonths = yearsDiff * 12 + monthsDiff + 1
           
           const notes = []
-          let masterDoc: any = null
+          let masterDoc: jsPDF | null = null
 
           for (let i = 0; i < totalMonths; i++) {
             const dueDate = new Date(startDate)
@@ -98,15 +98,17 @@ export default function ContractForm({ onSuccess }: ContractFormProps) {
               status: "pending"
             })
             
-            masterDoc = generatePromissoryNotePDF({
-              tenant,
-              unit,
-              building: (unit as any).building,
-              startDate: formData.start_date,
-              endDate: formData.end_date,
-              monthlyAmount: formData.monthly_amount,
-              depositAmount: formData.deposit_amount
-            }, i + 1, dueDate, masterDoc || undefined)
+            if (unit.building) {
+              masterDoc = generatePromissoryNotePDF({
+                tenant,
+                unit,
+                building: unit.building,
+                startDate: formData.start_date,
+                endDate: formData.end_date,
+                monthlyAmount: formData.monthly_amount,
+                depositAmount: formData.deposit_amount
+              }, i + 1, dueDate, masterDoc || undefined)
+            }
           }
 
           if (masterDoc) {
@@ -118,7 +120,8 @@ export default function ContractForm({ onSuccess }: ContractFormProps) {
       onSuccess()
     } catch (error) {
       console.error("Error saving contract:", error)
-      alert("Error al guardar el contrato")
+      const message = error instanceof Error ? error.message : "Error desconocido al guardar el contrato"
+      alert(message)
     } finally {
       setLoading(false)
     }
@@ -133,14 +136,14 @@ export default function ContractForm({ onSuccess }: ContractFormProps) {
   const handlePreview = () => {
     const tenant = tenants.find(t => t.id === formData.tenant_id)
     const unit = units.find(u => u.id === formData.unit_id)
-    if (!tenant || !unit || !formData.start_date || !formData.end_date) {
+    if (!tenant || !unit || !formData.start_date || !formData.end_date || !unit.building) {
       alert("Por favor completa los datos básicos para la previsualización")
       return
     }
     generateContractPDF({
       tenant,
       unit,
-      building: (unit as any).building,
+      building: unit.building,
       startDate: formData.start_date,
       endDate: formData.end_date,
       monthlyAmount: formData.monthly_amount,

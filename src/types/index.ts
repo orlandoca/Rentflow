@@ -17,6 +17,7 @@ export interface Building {
   owner_name: string
   owner_ci: string // Nuevo campo
   status: "available" | "rented" | "maintenance"
+  property_type?: "building" | "house" // Nuevo: Edificio o Casa
   created_at: string
   updated_at: string
 }

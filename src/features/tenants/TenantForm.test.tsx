@@ -28,11 +28,11 @@ describe('TenantForm', () => {
 
     // Llenar los campos
     fireEvent.change(screen.getByLabelText(/Nombre Completo/i), { target: { value: 'Carlos Ruiz' } })
-    fireEvent.change(screen.getByLabelText(/^CI$/i), { target: { value: '5.678.901' } })
+    fireEvent.change(screen.getByLabelText(/Cédula de Identidad/i), { target: { value: '5.678.901' } })
     fireEvent.change(screen.getByLabelText(/Teléfono/i), { target: { value: '0985987654' } })
 
     // Enviar el formulario
-    fireEvent.click(screen.getByRole('button', { name: /Guardar Inquilino/i }))
+    fireEvent.click(screen.getByRole('button', { name: /Registrar Inquilino/i }))
 
     await waitFor(() => {
       // Verificar que se llamó a Supabase con los datos correctos
@@ -53,11 +53,8 @@ describe('TenantForm', () => {
   it('no debe enviar datos si faltan campos obligatorios (simulado por no llamar a supabase)', async () => {
     render(<TenantForm onSuccess={() => {}} />)
 
-    // Nota: El botón de submit tiene validación nativa 'required', 
-    // pero para este test vamos a simular que el submit no ocurre si faltan datos
-    // en nuestra lógica de handleSubmit
-    
-    const form = screen.getByRole('button', { name: /Guardar Inquilino/i }).closest('form')
+    const button = screen.getByRole('button', { name: /Registrar Inquilino/i })
+    const form = button.closest('form')
     if (form) {
       fireEvent.submit(form)
     }

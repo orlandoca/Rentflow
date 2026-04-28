@@ -49,7 +49,7 @@ function App() {
   const tabs = [
     { id: "dashboard", label: "Resumen", icon: "📊" },
     { id: "tenants", label: "Inquilinos", icon: "👤" },
-    { id: "buildings", label: "Edificios", icon: "🏢" },
+    { id: "buildings", label: "Inmuebles", icon: "🏠" },
     { id: "contracts", label: "Contratos", icon: "📄" },
     { id: "expenses", label: "Gastos", icon: "💸" },
   ]
@@ -107,7 +107,7 @@ function App() {
                 }}
                 className={`${showForm ? "bg-slate-800" : "bg-emerald-600 hover:bg-emerald-500"} text-white rounded-xl px-6 font-bold shadow-lg transition-all hidden md:flex h-10`}
               >
-                {showForm ? "Volver" : `Nuevo ${activeTab === "tenants" ? "Inquilino" : activeTab === "buildings" ? (activeSubTab === "list" ? "Edificio" : "Depto") : activeTab === "expenses" ? "Gasto" : "Contrato"}`}
+                {showForm ? "Volver" : `Nuevo ${activeTab === "tenants" ? "Inquilino" : activeTab === "buildings" ? (activeSubTab === "list" ? "Inmueble" : "Depto") : activeTab === "expenses" ? "Gasto" : "Contrato"}`}
               </Button>
             )}
             <button
@@ -131,7 +131,7 @@ function App() {
           <>
             {activeTab === "buildings" && !showForm && (
               <div className="flex gap-8 border-b border-slate-900 mb-8">
-                <button onClick={() => setActiveSubTab("list")} className={`pb-4 text-xs font-black uppercase tracking-widest transition-all ${activeSubTab === "list" ? "text-blue-400 border-b-2 border-blue-400" : "text-slate-600 hover:text-slate-400"}`}>Torres / Edificios</button>
+                <button onClick={() => setActiveSubTab("list")} className={`pb-4 text-xs font-black uppercase tracking-widest transition-all ${activeSubTab === "list" ? "text-blue-400 border-b-2 border-blue-400" : "text-slate-600 hover:text-slate-400"}`}>Listado Inmuebles</button>
                 <button onClick={() => setActiveSubTab("units")} className={`pb-4 text-xs font-black uppercase tracking-widest transition-all ${activeSubTab === "units" ? "text-blue-400 border-b-2 border-blue-400" : "text-slate-600 hover:text-slate-400"}`}>Departamentos</button>
               </div>
             )}
@@ -142,16 +142,16 @@ function App() {
                   <div className="mb-8">
                     <h2 className="text-3xl font-black text-white tracking-tight">
                       {editingTenant ? `Editar Inquilino: ${editingTenant.full_name}` :
-                       editingBuilding ? `Editar Edificio: ${editingBuilding.name}` :
+                       editingBuilding ? `Editar Inmueble: ${editingBuilding.name}` :
                        activeTab === "tenants" ? "Nuevo Inquilino" :
-                       activeTab === "buildings" ? (activeSubTab === "list" ? "Registrar Edificio" : "Nuevo Departamento") :
+                       activeTab === "buildings" ? (activeSubTab === "list" ? "Registrar Inmueble" : "Nuevo Departamento") :
                        activeTab === "expenses" ? "Registrar Gasto" :
                        "Crear Contrato"}
                     </h2>
                     <p className="text-slate-500 text-sm mt-1">Completa los datos para el registro oficial.</p>
                   </div>
                   {activeTab === "tenants" ? <TenantForm tenant={editingTenant || undefined} onSuccess={handleSuccess} /> :
-                   activeTab === "buildings" ? (activeSubTab === "list" ? <BuildingForm building={editingBuilding || undefined} onSuccess={handleSuccess} /> : <UnitForm onSuccess={handleSuccess} />) :
+                   activeTab === "buildings" ? (activeSubTab === "list" ? <BuildingForm key={editingBuilding?.id || "new"} building={editingBuilding || undefined} onSuccess={handleSuccess} /> : <UnitForm onSuccess={handleSuccess} />) :
                    activeTab === "expenses" ? <ExpenseForm onSuccess={handleSuccess} /> :
                    <ContractForm onSuccess={handleSuccess} />}
                 </section>

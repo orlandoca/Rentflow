@@ -1,7 +1,11 @@
-﻿import { createClient } from '@supabase/supabase-js'
+import { createClient } from '@supabase/supabase-js'
 
-// DiagnÃ³stico temporal: hardcoding de credenciales
-const supabaseUrl = 'https://vdcapnhaqyadsaaspwwq.supabase.co'
-const supabaseAnonKey = 'sb_publishable_a1qxtA_ojUjH8n3bb6HVjw_irOTMR0E'
+// Usamos variables de entorno para mayor seguridad y flexibilidad
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey)
+if (!supabaseUrl || !supabaseAnonKey) {
+  console.warn("⚠️ Las variables de Supabase no están configuradas en el archivo .env")
+}
+
+export const supabase = createClient(supabaseUrl || '', supabaseAnonKey || '')

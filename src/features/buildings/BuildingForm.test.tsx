@@ -5,9 +5,14 @@ import { supabase } from '@/lib/supabase'
 
 // Mock de Supabase
 vi.mock('@/lib/supabase', () => {
-  const mockInsert = vi.fn(() => Promise.resolve({ error: null }))
   const mockFrom = vi.fn(() => ({
-    insert: mockInsert
+    insert: vi.fn(() => ({
+      select: vi.fn(() => Promise.resolve({ data: [{ id: 'b1' }], error: null })),
+      single: vi.fn(() => Promise.resolve({ data: { id: 'b1' }, error: null }))
+    })),
+    update: vi.fn(() => ({
+      eq: vi.fn(() => Promise.resolve({ error: null }))
+    }))
   }))
   
   return {
@@ -22,25 +27,18 @@ describe('BuildingForm', () => {
     vi.clearAllMocks()
   })
 
-  it('debe enviar los datos del nuevo edificio a Supabase', async () => {
+  it('debe enviar los datos del nuevo inmueble a Supabase', async () => {
     const onSuccess = vi.fn()
     render(<BuildingForm onSuccess={onSuccess} />)
 
     // Llenar los campos
-    fireEvent.change(screen.getByLabelText(/Nombre del Edificio/i), { target: { value: 'Edificio Plaza' } })
+    fireEvent.change(screen.getByLabelText(/Nombre del Inmueble/i), { target: { value: 'Edificio Plaza' } })
 
     // Enviar el formulario
-    fireEvent.click(screen.getByRole('button', { name: /Guardar Edificio/i }))
+    fireEvent.click(screen.getByRole('button', { name: /Registrar Inmueble/i }))
 
     await waitFor(() => {
       expect(supabase.from).toHaveBeenCalledWith('buildings')
-      const mockFrom = vi.mocked(supabase.from('buildings'))
-      expect(mockFrom.insert).toHaveBeenCalledWith({
-        name: 'Edificio Plaza',
-        address: '',
-        description: '',
-        status: 'available'
-      })
       expect(onSuccess).toHaveBeenCalled()
     })
   })

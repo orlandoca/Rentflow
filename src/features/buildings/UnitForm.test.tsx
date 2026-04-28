@@ -54,7 +54,11 @@ describe('UnitForm', () => {
         price: 2800000,
         floor: '',
         description: '',
-        status: 'available'
+        status: 'available',
+        bedrooms: 1,
+        bathrooms: 1,
+        has_balcony: false,
+        sq_meters: 0
       })
       expect(onSuccess).toHaveBeenCalled()
     })

@@ -49,9 +49,18 @@ export default function BuildingList({ onEdit }: BuildingListProps) {
         >
           <div className="flex justify-between items-start">
             <div className="space-y-2">
-              <h3 className="text-xl font-black text-white tracking-tight group-hover:text-blue-400 transition-colors">
-                {building.name}
-              </h3>
+              <div className="flex items-center gap-2">
+                <h3 className="text-xl font-black text-white tracking-tight group-hover:text-blue-400 transition-colors">
+                  {building.name}
+                </h3>
+                <span className={`text-[9px] font-black px-2 py-0.5 rounded uppercase tracking-tighter border ${
+                  building.property_type === 'house' 
+                    ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' 
+                    : 'bg-blue-500/10 text-blue-500 border-blue-500/20'
+                }`}>
+                  {building.property_type === 'house' ? '🏠 Casa' : '🏢 Edificio'}
+                </span>
+              </div>
               
               <div className="flex items-center gap-2 text-[10px] font-black text-emerald-400 uppercase tracking-[0.2em] bg-emerald-500/10 px-3 py-1.5 rounded-lg w-fit">
                 <span>👤</span>
