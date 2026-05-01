@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useMemo } from "react"
 import TenantsList from "@/features/tenants/TenantsList"
 import TenantForm from "@/features/tenants/TenantForm"
 import BuildingList from "@/features/buildings/BuildingList"
@@ -19,8 +19,35 @@ import { Building, Tenant } from "@/types"
 type Tab = "dashboard" | "tenants" | "buildings" | "contracts" | "expenses"
 type SubTab = "list" | "units"
 
+function SubscriptionExpired() {
+  const whatsappUrl = "https://wa.me/595985123456?text=Hola!%20Mi%20periodo%20de%20prueba%20en%20Rentflow%20venció.%20Quiero%20renovar%20mi%20plan."
+  return (
+    <div className="min-h-[60vh] flex flex-col items-center justify-center text-center px-4">
+      <div className="w-20 h-20 bg-red-500/10 rounded-full flex items-center justify-center text-4xl mb-6">⏳</div>
+      <h2 className="text-4xl font-black text-white tracking-tighter mb-4 uppercase italic">Periodo de Prueba Finalizado</h2>
+      <p className="text-slate-400 max-w-md mb-8 leading-relaxed">
+        Tus 14 días de prueba gratuita han terminado. Para seguir administrando tus propiedades con la potencia de Rentflow, es necesario activar un plan.
+      </p>
+      <div className="flex flex-col sm:flex-row gap-4">
+        <a 
+          href={whatsappUrl} 
+          target="_blank" 
+          rel="noopener noreferrer"
+          className="bg-emerald-600 hover:bg-emerald-500 text-white px-8 py-4 rounded-2xl font-black uppercase text-xs tracking-widest shadow-xl transition-all"
+        >
+          Renovar por WhatsApp
+        </a>
+        <button onClick={() => window.location.reload()} className="bg-slate-900 border border-slate-800 text-slate-400 px-8 py-4 rounded-2xl font-black uppercase text-xs tracking-widest hover:text-white transition-all">
+          Reintentar Carga
+        </button>
+      </div>
+      <p className="mt-12 text-[10px] text-slate-600 font-bold uppercase tracking-widest">Tus datos están seguros y guardados.</p>
+    </div>
+  )
+}
+
 function App() {
-  const { user, loading, signOut } = useAuth()
+  const { user, profile, loading, signOut } = useAuth()
   const [activeTab, setActiveTab] = useState<Tab>("dashboard")
   const [activeSubTab, setActiveSubTab] = useState<SubTab>("list")
   const [showForm, setShowForm] = useState(false)
@@ -28,6 +55,25 @@ function App() {
   const [editingBuilding, setEditingBuilding] = useState<Building | null>(null)
   const [editingTenant, setEditingTenant] = useState<Tenant | null>(null)
   const [refreshKey, setRefreshKey] = useState(0)
+
+  // Lógica de Suscripción estable calculada de forma pura
+  const [now] = useState(() => Date.now())
+  const { daysRemaining, isExpired, isTrialing } = useMemo(() => {
+    const trialDays = 14
+    const trialStartDate = profile?.trial_start_date 
+      ? new Date(profile.trial_start_date).getTime() 
+      : now
+    
+    const diffTime = now - trialStartDate
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24))
+    const remaining = trialDays - diffDays
+    
+    return {
+      daysRemaining: remaining,
+      isExpired: profile?.status === "expired" || (profile?.status === "trialing" && remaining <= 0),
+      isTrialing: profile?.status === "trialing" && remaining > 0
+    }
+  }, [profile, now])
 
   const handleSuccess = () => {
     setShowForm(false)
@@ -69,6 +115,12 @@ function App() {
 
   return (
     <div className="min-h-screen bg-slate-950 text-white font-sans selection:bg-blue-500/30">       
+      {isTrialing && (
+        <div className="bg-blue-600 text-white text-[10px] font-black uppercase tracking-[0.2em] py-2 text-center animate-in fade-in slide-in-from-top duration-700">
+          ⏳ Te quedan {daysRemaining} días de prueba gratuita del Plan Básico
+        </div>
+      )}
+
       <header className="sticky top-0 z-50 bg-slate-950/80 backdrop-blur-md border-b border-slate-900">
         <div className="max-w-5xl mx-auto px-4 md:px-8 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
           <div className="flex items-center gap-3">
@@ -81,25 +133,27 @@ function App() {
             </div>
           </div>
 
-          <nav className="flex bg-slate-900/50 p-1 rounded-2xl border border-slate-800">
-            {tabs.map(tab => (
-              <button
-                key={tab.id}
-                onClick={() => { setActiveTab(tab.id as Tab); setShowForm(false); setSelectedContractId(null); setEditingBuilding(null); setEditingTenant(null); }}
-                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all ${
-                  activeTab === tab.id
-                    ? "bg-blue-600 text-white shadow-lg shadow-blue-900/20"
-                    : "text-slate-500 hover:text-slate-300"
-                }`}
-              >
-                <span>{tab.icon}</span>
-                <span className="hidden md:inline">{tab.label}</span>
-              </button>
-            ))}
-          </nav>
+          {!isExpired && (
+            <nav className="flex bg-slate-900/50 p-1 rounded-2xl border border-slate-800">
+              {tabs.map(tab => (
+                <button
+                  key={tab.id}
+                  onClick={() => { setActiveTab(tab.id as Tab); setShowForm(false); setSelectedContractId(null); setEditingBuilding(null); setEditingTenant(null); }}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+                    activeTab === tab.id
+                      ? "bg-blue-600 text-white shadow-lg shadow-blue-900/20"
+                      : "text-slate-500 hover:text-slate-300"
+                  }`}
+                >
+                  <span>{tab.icon}</span>
+                  <span className="hidden md:inline">{tab.label}</span>
+                </button>
+              ))}
+            </nav>
+          )}
 
           <div className="flex items-center gap-4">
-            {activeTab !== "dashboard" && !selectedContractId && (
+            {!isExpired && activeTab !== "dashboard" && !selectedContractId && (
               <Button
                 onClick={() => {
                   if (showForm) { setEditingBuilding(null); setEditingTenant(null); }
@@ -122,7 +176,9 @@ function App() {
       </header>
 
       <main className="max-w-5xl mx-auto px-4 md:px-8 py-12">
-        {selectedContractId ? (
+        {isExpired ? (
+          <SubscriptionExpired />
+        ) : selectedContractId ? (
           <ContractDetails
             contractId={selectedContractId}
             onBack={() => setSelectedContractId(null)}

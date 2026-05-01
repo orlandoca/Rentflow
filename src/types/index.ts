@@ -83,3 +83,11 @@ export interface Expense {
   unit?: Unit;
 }
 
+export interface Profile {
+  id: string
+  full_name: string | null
+  plan_type: "basic" | "standard" | "premium"
+  trial_start_date: string
+  status: "trialing" | "active" | "expired" | "cancelled"
+}
+
